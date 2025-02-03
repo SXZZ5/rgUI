@@ -17,6 +17,7 @@ func main() {
 	app := &App{}
 	utils := &Utils{}
 	config := &Config{}
+	fops := &Fops{}
 
 	// Create application with options
 	err := wails.Run(&options.App{
@@ -31,11 +32,13 @@ func main() {
 			app.startup(ctx);
 			utils.startup(ctx);
 			config.startup(ctx);
+			fops.startup(ctx);
 		},
 		Bind: []interface{}{
 			app,
 			utils,
 			config,
+			fops,
 		},
 		EnableDefaultContextMenu: false,
 		Windows: &windows.Options{

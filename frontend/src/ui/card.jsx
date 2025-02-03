@@ -1,5 +1,6 @@
 import { useFFState } from "../state/filefolderstore";
 import { useState } from "react";
+
 export default function Card ({height, content}) {
     // const {uid, incrementUid, sidebarState} = useFFState();
     const {sidebarState} = useFFState();
@@ -15,9 +16,6 @@ export default function Card ({height, content}) {
         return (
             <div style={style}>
                 {sidebarState[content].map((z)=>{
-                    console.log("mapping ", z)
-                    console.log(typeof(z));
-                    // incrementUid();
                     return (<Item str={z} key={z} />)
                 })}
             </div>
@@ -33,9 +31,8 @@ export default function Card ({height, content}) {
 }
 
 function Item({str}){
-    console.log("inside Item", str);
     const [hover, setHover] = useState(false);
-    
+    const { setPrimarybarState } = useFFState();
     const style={
         margin: "5px",
         marginLeft: "3px",
@@ -50,9 +47,13 @@ function Item({str}){
     const g = () => {
         setHover((prev) => !prev);
     }
+
+    const handleClick = () => {
+        setPrimarybarState(str);
+    }
     
     return (
-        <div style={style} onMouseEnter={g} onMouseLeave={g}>
+        <div style={style} onMouseEnter={g} onMouseLeave={g} onClick={handleClick}>
             {str}
         </div>
     )

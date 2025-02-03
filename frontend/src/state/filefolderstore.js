@@ -7,14 +7,27 @@ const useFFState = create((set) => ({
             uid: state.uid + 1,
         }
     }),
-    sidebarState: { Drives: [], Pinned: []},
+
+    sidebarState: { Drives: [], Pinned: [] },
     setSidebarState: (z) => set((state) => {
         console.log(z);
         return {
             ...state,
             sidebarState: z,
         }
-    }) 
+    }), 
+
+    primarybarState_path: "null",
+    setPrimarybarState: (z) => set((state) => {
+        console.log(z);
+        const resobj = {
+            ...state,
+            primarybarState_path: z
+        }
+        console.log(resobj);
+        return resobj
+    })
+
 }));
 
-export {useFFState};
+export { useFFState };
