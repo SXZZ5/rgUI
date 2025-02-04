@@ -17,10 +17,15 @@ export default function Sidebar() {
         g();
     }, [])
     const style = {
-        flexBasis: `${sidebarWidth}vw`,
+        position: "fixed",
+        width: `${sidebarWidth}vw`,
+        maxWidth: `${sidebarWidth}vw`,
+        overflowX: 'clip',
+        // flexBasis: `${sidebarWidth}vw`,
+        // flexShrink: "0",
         marginTop: "5vh",
         height: "95vh",
-        backgroundColor: "rgba(255,255,255,0.2)"
+        backgroundColor: "rgba(255,255,255,0)"
     }
     const val = 30
     return (

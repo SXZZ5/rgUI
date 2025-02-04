@@ -6,10 +6,6 @@ export default function Panes() {
         <div style={{ display: 'flex', flexDirection: 'row' }}>
             <Sidebar />
             <Primary />
-{/*             <div style={{ flexBasis: "86vw", height: "100vh", backgroundColor: 'whitesmoke' }} >
-                <Button clickCallback={Userdir} txt={"User Directory Check"} />
-                <Button clickCallback={Drivescheck} txt={"Drives Check"} />
-            </div> */}
         </div>
     )
 }

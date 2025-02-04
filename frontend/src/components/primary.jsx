@@ -5,18 +5,23 @@ import { Button } from "../ui/button";
 import FolderContent from "./foldercontent";
 
 export default function Primary() {
-    const { primarybarWidth } = usePaneState();
+    const { primarybarWidth, sidebarWidth } = usePaneState();
 
     const style = {
-        flexBasis: `${primarybarWidth}vw`,
-        height: "100vh",
-        backgroundColor: 'whitesmoke',
+        position: "fixed",
+        left: `${sidebarWidth}vw`, 
+        width: `${primarybarWidth}vw`,
+        marginTop: "5vh",
+        height: "95vh",
+        backgroundColor: "whitesmoke",
+        overflowY: "scroll",
+        scrollbarWidth: "none"
     }
 
-    return (
-        <div style={style}>
+    return <>
+        <div className="primarybar" style={style}>
             <Button clickCallback={Drivescheck} txt={"Drives Check"} />
             <FolderContent/>
         </div>
-    )
+    </>
 }

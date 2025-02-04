@@ -15,10 +15,9 @@ export default function FolderContent () {
          console.log("useEffect callback exec-ing");
      }, [primarybarState_path])
 
-    // const style = { height: "100%", width: "100%" }
-    const style = { }
+    const style = { height: "100%" }
      return (
-        <div style={style}>
+        <div>
             {contents.map((z)=> <Item str={z}/>)}
         </div>
      )

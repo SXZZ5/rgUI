@@ -9,7 +9,8 @@ export default function TrafficLight({ f, color }) {
         borderWidth: "0px",
         borderColor: "rgba(137, 138, 138, 0.3)",
         backgroundColor: color,
-        marginRight: "10px",
+        marginTop: "10px",
+        marginLeft: "10px",
     }
 
     return (
