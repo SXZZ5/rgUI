@@ -9,21 +9,22 @@ import (
 	// "time"
 )
 
-type PinnedLoc struct {
-	path       string
-	identifier string
+type Skinfo struct {
+	Name string
+	Path string
 	// color string //could be some "rgba(x,y,z,a)" that I can just pass to the css.
 }
 
 type Data struct {
-	Drives []string
-	Pinned []PinnedLoc
+	Drives []Skinfo
+	Pinned []Skinfo
 }
 
 type Config struct {
 	ctx       context.Context
 	user_home string
 	cfgPath   string
+	logPath   string
 	data      Data
 }
 
@@ -35,55 +36,49 @@ func (config *Config) startup(ctx context.Context) {
 		return
 	}
 
-	drives := config.Drivescheck()
-
 	fmt.Println("user home dir:", user_home)
 	config.user_home = user_home
 	// config_path := filepath.Join(user_home, "bbfm")
 	config_path := filepath.Join(user_home, "bbfm_config.json")
 	config.cfgPath = config_path
+	config.logPath = filepath.Join(user_home, "bbfm.log")
 
-	_, err = os.Stat(config_path)
-	if err != nil {
-		data, _ := config.LoadJson()
-		data.Drives = drives
-		config.data = data
-		config.WriteConfigAsJson()
-	} else {
-		data := Data{}
-		data.Drives = drives
-		config.data = data
-		config.WriteConfigAsJson()
-	}
+	config.InitJSON()
 }
 
-func (config *Config) GetConfigData () Data {
-    // time.Sleep(time.Second*3)
-    fmt.Println(config.data);
-    return config.data
+func (config *Config) GetConfigData() Data {
+	// time.Sleep(time.Second*3)
+	fmt.Println(config.data)
+	return config.data
 }
 
 func (config *Config) PinALocation(path string) {
-	item := PinnedLoc{path, filepath.Base(path)}
+	item := Skinfo{filepath.Base(path), path}
 	config.data.Pinned = append(config.data.Pinned, item)
 	config.WriteConfigAsJson()
 }
 
-func (config *Config) LoadJson() (Data, error) {
+func (config *Config) InitJSON() {
 	jsonFile, err := os.ReadFile(config.cfgPath)
 	if err != nil {
-		fmt.Println("error opening config file", err)
-		return Data{}, err
+		config.FileLogger("Config probably did not exist", err)
+		config.data.Drives = config.Drivescheck()
+		config.data.Pinned = []Skinfo{}
+		config.WriteConfigAsJson()
+		return
 	}
 
 	data := Data{}
 	err = json.Unmarshal(jsonFile, &data)
 	if err != nil {
-		fmt.Println("error in unmarshalling", err)
-		return Data{}, err
+		config.FileLogger("error in unmarshalling", err)
+		return
 	}
-
-	return data, nil
+	config.FileLogger("JSON that was read from file", jsonFile)
+	config.FileLogger("JSON loaded data", data)
+	data.Drives = config.Drivescheck()
+	config.data = data
+	config.WriteConfigAsJson()
 }
 
 func (config *Config) WriteConfigAsJson() error {
@@ -103,17 +98,28 @@ func (config *Config) WriteConfigAsJson() error {
 	return nil
 }
 
-func (config *Config) Drivescheck() []string {
-	drives := []string{}
+func (config *Config) Drivescheck() []Skinfo {
+	drives := []Skinfo{}
 	for i := 1; i <= 26; i++ {
-		ch := string('A' + i - 1)
+		ch := string(rune('A' + i - 1))
 		ch += ":"
 		_, err := os.Stat(ch)
 		if err != nil {
 			continue
 		}
-		drives = append(drives, ch)
-        fmt.Println(ch);
+		drives = append(drives, Skinfo{ch, ch})
+		fmt.Println(ch)
 	}
 	return drives
+}
+
+func (config *Config) FileLogger(v ...interface{}) error {
+	file, err := os.OpenFile(config.logPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	_, err = fmt.Fprintln(file, v...)
+	return err
 }

@@ -1,8 +1,9 @@
 package main
 
 import (
-	"embed"
 	"context"
+	"embed"
+
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -28,11 +29,13 @@ func main() {
 			Assets: assets,
 		},
 		Frameless: true,
-		OnStartup: func (ctx context.Context) {
-			app.startup(ctx);
+		MinHeight: 500,
+		MinWidth:  650,
+		OnStartup: func(ctx context.Context) {
+			app.startup(ctx)
 			// skDirEntry.startup(ctx);
-			config.startup(ctx);
-			fops.startup(ctx);
+			config.startup(ctx)
+			fops.startup(ctx)
 		},
 		Bind: []interface{}{
 			app,

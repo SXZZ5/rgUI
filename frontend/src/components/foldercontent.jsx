@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useFFState } from "../state/filefolderstore";
 import { GetDir } from "../../wailsjs/go/main/Fops"
-
+import { PinALocation } from "../../wailsjs/go/main/Config";
+import { LogPrint } from "../../wailsjs/runtime/runtime";
 
 export default function FolderContent() {
     const { primarybarState_path, revertPrimarybarState, advancePrimarybarState } = useFFState();
@@ -46,7 +47,6 @@ export default function FolderContent() {
     }
 
     const g = () => {
-        console.log("mouse disengaged");
         sksum.current = 0;
     }
 
@@ -69,13 +69,14 @@ export default function FolderContent() {
 
 function Item({ object, id }) {
     const [hovering, setHovering] = useState(false);
-    const { setPrimarybarState } = useFFState();
+    const { incrementUid, setPrimarybarState } = useFFState();
     const style = {
         marginLeft: "5px",
         marginRight: "5px",
         backgroundColor: (id % 2 == 0) ? "rgba(70, 130, 180,0.2)" : "rgba(220, 220, 220,0.4)",
         border: (hovering) ? "solid 1px rgba(0,0,0,1)" : "solid 1px rgba(0,0,0,0)",
-        cursor: 'default'
+        cursor: 'default',
+        fontSize: 'clamp(12px, 2vw, 16px)'
     }
     const toggle = () => {
         setHovering((prev) => !prev);
@@ -85,12 +86,24 @@ function Item({ object, id }) {
         setPrimarybarState(object.Path)
     }
 
+    const h = (e) => {
+        if(e.altKey) {
+            console.log("Pinning action done");
+            LogPrint("Pinning action done");
+            PinALocation(object.Path)
+            incrementUid()
+        }
+    }
+
     return (
         <div
+            className="folder-item"
             style={style}
             onMouseEnter={toggle}
             onMouseLeave={toggle}
             onDoubleClick={dblClickHandler}
+            onClick={h}
+            // onContextMenu={contextMenuHandler}
         >
             {(object.Isdir) ? '📁' : '📄'}{object.Name}
         </div>

@@ -7,7 +7,7 @@ import Card from "../ui/card";
 
 export default function Sidebar() {
     const { sidebarWidth } = usePaneState();
-    const { uid, incrementUid,  setSidebarState } = useFFState();
+    const { uid, setSidebarState } = useFFState();
     useEffect(()=> {
         const g = async () => {
             const res =  await GetConfigData();
@@ -15,21 +15,19 @@ export default function Sidebar() {
             setSidebarState(res);
         };
         g();
-    }, [])
+    }, [uid])
     const style = {
         position: "fixed",
         width: `${sidebarWidth}vw`,
         maxWidth: `${sidebarWidth}vw`,
         overflowX: 'clip',
-        // flexBasis: `${sidebarWidth}vw`,
-        // flexShrink: "0",
-        marginTop: "5vh",
+        top: "5vh",
         height: "95vh",
         backgroundColor: "rgba(255,255,255,0)"
     }
     const val = 30
     return (
-        <div style={style} >
+        <div style={style} className="Sidebar" >
             <Card height={60} content={"Pinned"} />
             <Card height={30} content={"Drives"} />
             <AdjustWidth />

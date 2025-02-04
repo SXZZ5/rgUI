@@ -2,7 +2,6 @@ import { useFFState } from "../state/filefolderstore";
 import { useState } from "react";
 
 export default function Card ({height, content}) {
-    // const {uid, incrementUid, sidebarState} = useFFState();
     const {sidebarState} = useFFState();
 
     const style = {
@@ -15,8 +14,8 @@ export default function Card ({height, content}) {
     if (sidebarState[content] != null && sidebarState[content].length > 0) {
         return (
             <div style={style}>
-                {sidebarState[content].map((z)=>{
-                    return (<Item str={z} key={z} />)
+                {sidebarState[content].map((z,idx)=>{
+                    return (<Item obj={z} key={idx} />)
                 })}
             </div>
         )
@@ -30,7 +29,7 @@ export default function Card ({height, content}) {
     }
 }
 
-function Item({str}){
+function Item({obj}){
     const [hover, setHover] = useState(false);
     const { setPrimarybarState } = useFFState();
     const style={
@@ -49,12 +48,12 @@ function Item({str}){
     }
 
     const handleClick = () => {
-        setPrimarybarState(str);
+        setPrimarybarState(obj.Path);
     }
     
     return (
         <div style={style} onMouseEnter={g} onMouseLeave={g} onClick={handleClick}>
-            {str}
+            {obj.Name}
         </div>
     )
 }

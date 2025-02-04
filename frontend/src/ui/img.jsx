@@ -5,8 +5,10 @@ export default function Img({ srci, clickHandler }) {
         setActive((prev) => !prev);
     }
     const style = {
-        height: "25px",
-        width: "25px",
+        height: "80%",
+        width: "5%",
+        maxHeight: "25px",
+        maxWidth: "25px",
         marginLeft: "5px",
         marginTop: "1px",
         border: (active) ? "solid 1px rgba(0,0,0,1)" : "solid 1px rgba(0,0,0,0)"

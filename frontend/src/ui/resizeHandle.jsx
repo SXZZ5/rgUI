@@ -5,11 +5,14 @@ export default function ResizeHandle () {
             left: "50%", 
             top: "0%",
             transform: "translate(-50%,0%)",
-            height: "25px",
-            width: "80px",
+            height: "3%",
+            width: "10%",
+            maxHeight: "20px",
+            maxWidth: "80px",
             backgroundColor: "rgba(0,0,0,0.1)",
             borderRadius: "8px",
             boxShadow: "10px black",
+            transofrm: "translate(-50%,0%)"
         }}></div>
     )
 }

@@ -11,7 +11,7 @@ export default function Primary() {
         position: "fixed",
         left: `${sidebarWidth}vw`, 
         width: `${primarybarWidth}vw`,
-        marginTop: "5vh",
+        top: "5vh",
         height: "95vh",
         backgroundColor: "whitesmoke",
         overflowY: "scroll",
