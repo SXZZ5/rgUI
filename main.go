@@ -15,9 +15,9 @@ var assets embed.FS
 func main() {
 	// Create an instance of the app structure
 	app := &App{}
-	utils := &Utils{}
 	config := &Config{}
 	fops := &Fops{}
+	// skDirEntry := &SkDirEntry{}
 
 	// Create application with options
 	err := wails.Run(&options.App{
@@ -30,15 +30,15 @@ func main() {
 		Frameless: true,
 		OnStartup: func (ctx context.Context) {
 			app.startup(ctx);
-			utils.startup(ctx);
+			// skDirEntry.startup(ctx);
 			config.startup(ctx);
 			fops.startup(ctx);
 		},
 		Bind: []interface{}{
 			app,
-			utils,
 			config,
 			fops,
+			// skDirEntry,
 		},
 		EnableDefaultContextMenu: false,
 		Windows: &windows.Options{

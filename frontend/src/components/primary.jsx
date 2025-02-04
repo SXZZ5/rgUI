@@ -20,7 +20,6 @@ export default function Primary() {
 
     return <>
         <div className="primarybar" style={style}>
-            <Button clickCallback={Drivescheck} txt={"Drives Check"} />
             <FolderContent/>
         </div>
     </>

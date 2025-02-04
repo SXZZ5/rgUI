@@ -1,8 +1,13 @@
 import { LogPrint, Quit, WindowMinimise, WindowToggleMaximise } from "../../wailsjs/runtime/runtime.js"
 import TrafficLight from "../ui/trafficlight.jsx"
 import ResizeHandle from "../ui/resizeHandle.jsx"
+import Img from "../ui/img.jsx"
 import { usePaneState } from "../state/panestore.js"
-
+import backicon from "../assets/images/icon-back.png"
+import fwdicon from "../assets/images/icon-fwd.png"
+import upicon from "../assets/images/icon-up.png"
+import { useFFState } from "../state/filefolderstore.js"
+import { GetParent } from "../../wailsjs/go/main/Fops.js"
 export default function Titlebar() {
 
     const style = {
@@ -52,7 +57,32 @@ function Primary_Titlebar() {
     }
     return (
         <div style={style}>
+            <NavButtons />
             <ResizeHandle />
         </div>
     )
 }
+
+function NavButtons() {
+    const {
+        primarybarState_path,
+        revertPrimarybarState,
+        advancePrimarybarState,
+        setPrimarybarState
+    } = useFFState()
+    const imgstyle = { height: "15px", width: "15px", margin: "5px" }
+
+    const upnav = async () => {
+        const res = await GetParent(primarybarState_path)
+        setPrimarybarState(res)
+    }
+
+
+    return <div>
+        <Img srci={backicon} clickHandler={revertPrimarybarState} />
+        <Img srci={fwdicon} clickHandler={advancePrimarybarState} />
+        <Img srci={upicon} clickHandler={upnav} />
+    </div>
+}
+
+

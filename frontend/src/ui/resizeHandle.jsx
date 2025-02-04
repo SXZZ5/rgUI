@@ -1,7 +1,9 @@
 export default function ResizeHandle () {
     return (
         <div style={{
-            position: "relative", left: "50%", top: "0%",
+            position: "fixed", 
+            left: "50%", 
+            top: "0%",
             transform: "translate(-50%,0%)",
             height: "25px",
             width: "80px",

@@ -5,3 +5,7 @@
 export function GetDir(arg1) {
   return window['go']['main']['Fops']['GetDir'](arg1);
 }
+
+export function GetParent(arg1) {
+  return window['go']['main']['Fops']['GetParent'](arg1);
+}

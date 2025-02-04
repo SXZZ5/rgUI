@@ -44,6 +44,22 @@ export namespace main {
 		    return a;
 		}
 	}
+	export class SkDirEntry {
+	    Name: string;
+	    Path: string;
+	    Isdir: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new SkDirEntry(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Name = source["Name"];
+	        this.Path = source["Path"];
+	        this.Isdir = source["Isdir"];
+	    }
+	}
 
 }
 
