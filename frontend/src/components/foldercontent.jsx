@@ -1,14 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { useFFState } from "../state/filefolderstore";
-import { GetDir } from "../../wailsjs/go/main/Fops"
+import { AddSelected, GetDir, RemoveSelected } from "../../wailsjs/go/main/Fops"
 import { PinALocation } from "../../wailsjs/go/main/Config";
 import { LogPrint } from "../../wailsjs/runtime/runtime";
+import { usePaneState } from "../state/panestore";
 
 export default function FolderContent() {
     const { primarybarState_path, revertPrimarybarState, advancePrimarybarState } = useFFState();
     const [contents, setContents] = useState([]);
     const [ignoring, setIgnoring] = useState(false);
-    const [cnt, setCnt] = useState(0);
     const sksum = useRef(0);
 
     useEffect(() => {
@@ -69,11 +69,23 @@ export default function FolderContent() {
 
 function Item({ object, id }) {
     const [hovering, setHovering] = useState(false);
+    const [selected, setSelected] = useState(false);
     const { incrementUid, setPrimarybarState } = useFFState();
+    const { setContextMenuStyle } = usePaneState();
+
+    useEffect(()=>{
+        return ()=>{
+            setSelected(false);
+        }
+    },[]);
+
+    //this basically sets greenish color if selected, and if not selected then sets light blue or gray depending on parity of serial number.
+    const bgcolor = (selected) ? "rgba(127, 255, 212,0.8)" : ((id % 2 == 0) ? "rgba(70, 130, 180,0.2)" : "rgba(220, 220, 220,0.4)")
+
     const style = {
         marginLeft: "5px",
         marginRight: "5px",
-        backgroundColor: (id % 2 == 0) ? "rgba(70, 130, 180,0.2)" : "rgba(220, 220, 220,0.4)",
+        backgroundColor: bgcolor,
         border: (hovering) ? "solid 1px rgba(0,0,0,1)" : "solid 1px rgba(0,0,0,0)",
         cursor: 'default',
         fontSize: 'clamp(12px, 2vw, 16px)'
@@ -92,7 +104,23 @@ function Item({ object, id }) {
             LogPrint("Pinning action done");
             PinALocation(object.Path)
             incrementUid()
+        } else if(e.ctrlKey) {
+            console.log("selecting item");
+            if (selected) {
+                RemoveSelected(object.Path)
+            } else {
+                AddSelected(object.Path)
+            }
+            setSelected((prev) => !prev)
+            
         }
+    }
+
+    const contextMenuHandler = (e) => {
+        console.log("context menu called at coord:", e.clientX,e.clientY);
+        setContextMenuStyle({top: e.clientY, left: e.clientX})
+        document.getElementById('contextmenu').showPopover()
+        e.preventDefault();
     }
 
     return (
@@ -103,7 +131,7 @@ function Item({ object, id }) {
             onMouseLeave={toggle}
             onDoubleClick={dblClickHandler}
             onClick={h}
-            // onContextMenu={contextMenuHandler}
+            onContextMenu={contextMenuHandler}
         >
             {(object.Isdir) ? '📁' : '📄'}{object.Name}
         </div>

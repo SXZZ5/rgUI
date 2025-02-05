@@ -8,6 +8,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
+    "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 //go:embed all:frontend/dist
@@ -18,13 +19,12 @@ func main() {
 	app := &App{}
 	config := &Config{}
 	fops := &Fops{}
-	// skDirEntry := &SkDirEntry{}
 
 	// Create application with options
 	err := wails.Run(&options.App{
 		Title:  "rgui",
-		Width:  1024,
-		Height: 650,
+		Width:  900,
+		Height: 550,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
@@ -33,17 +33,16 @@ func main() {
 		MinWidth:  650,
 		OnStartup: func(ctx context.Context) {
 			app.startup(ctx)
-			// skDirEntry.startup(ctx);
 			config.startup(ctx)
 			fops.startup(ctx)
+            runtime.WindowCenter(ctx)
 		},
 		Bind: []interface{}{
 			app,
 			config,
 			fops,
-			// skDirEntry,
 		},
-		EnableDefaultContextMenu: false,
+		// EnableDefaultContextMenu: false,
 		Windows: &windows.Options{
 			WebviewIsTransparent: true,
 			WindowIsTranslucent:  true,

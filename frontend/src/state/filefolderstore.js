@@ -17,7 +17,6 @@ const useFFState = create((set) => ({
         }
     }), 
 
-
     navigate_cnt: 0,
     primarybarState_history: [],
     _idx_primarybarState_history: 0,

@@ -15,6 +15,14 @@ const usePaneState = create((set) => ({
         })
     },
     primarybarWidth: 86,
+    contextMenuStyle: {},
+    setContextMenuStyle: (z) => set((state) => {
+        console.log("updating popover style object");
+        return {
+            ...state,
+            contextMenuStyle: z
+        }
+    })
 }))
 
 

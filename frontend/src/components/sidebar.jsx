@@ -4,6 +4,7 @@ import { useFFState } from "../state/filefolderstore"
 import { GetConfigData } from "../../wailsjs/go/main/Config";
 import { LogPrint } from "../../wailsjs/runtime/runtime";
 import Card from "../ui/card";
+import { BeginTransfer } from "../../wailsjs/go/main/Fops";
 
 export default function Sidebar() {
     const { sidebarWidth } = usePaneState();
@@ -39,6 +40,7 @@ var pixelsum = 0;
 function AdjustWidth() {
     const [active, setActive] = useState(false);
     const { sidebarWidth, setSidebarWidth } = usePaneState();
+    const { primarybarState_path } = useFFState();
 
     const style = {
         position: "fixed",
@@ -67,6 +69,11 @@ function AdjustWidth() {
     return (
         <div id="ssk" style={style} onWheel={wheelHandler}>
             {sidebarWidth}
+            <button onClick={()=>{
+                BeginTransfer(primarybarState_path)
+            }}>
+                Click to paste here
+            </button>
         </div>
     )
 }

@@ -1,0 +1,190 @@
+package main
+
+//This file deals with:
+// . creating worker pool
+// . Copying and writing bytes to a new location.
+// . placing status messages on the channel about success or failure.
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"io"
+	"io/fs"
+	"os"
+	"path/filepath"
+	"strings"
+)
+
+type Work struct {
+	Src    string
+	Modsrc string
+	Status int
+}
+
+type Transfer struct {
+	files       []Work
+	fops        *Fops
+	directories []string
+	Destination string
+}
+
+func (transfer *Transfer) InitTransfer(caller *Fops, destination string) error {
+	// store caller info in struct only to regularly send updates of how much transfer
+	// is completed.
+	transfer.fops = caller
+	transfer.Destination = destination
+	transfer.files = []Work{}
+
+	directories := []string{}
+	for _, v := range caller.Selected {
+		info, err := os.Stat(v)
+		if err != nil {
+			transfer = nil
+			return err
+		}
+		if info.IsDir() {
+			directories = append(directories, v)
+		} else {
+			transfer.files = append(transfer.files, Work{v, filepath.Base(v), 0})
+		}
+		caller.SetTotalWork(info.Size())
+	}
+
+	transfer.directories = []string{}
+	for _, v := range directories {
+		walkerr := filepath.WalkDir(v, func(path string, d fs.DirEntry, tmperr error) error {
+			if tmperr != nil {
+				return errors.New("something bad happened during WalkDir")
+			}
+			fmt.Println("Walkdir", path, tmperr)
+			if !d.IsDir() {
+				transfer.files = append(transfer.files, Work{path, CutPrefix_(path, v), 0})
+			} else {
+				transfer.directories = append(transfer.directories, CutPrefix_(path, v))
+			}
+			return nil
+		})
+		if walkerr != nil {
+			transfer = nil
+			directories = nil
+			return walkerr
+		}
+		transfer.directories = append(transfer.directories, filepath.Base(v))
+	}
+	for _, v := range transfer.directories {
+		err := os.MkdirAll(transfer.gen_dest(v), 0755)
+		if err != nil {
+			transfer = nil
+			return err
+		}
+	}
+	fmt.Println("Verify if directories have been replicated or not")
+	transfer.makePool()
+	return nil
+}
+
+func (transfer *Transfer) gen_dest(src string) string {
+	return filepath.Join(transfer.Destination, src)
+}
+
+func CutPrefix_(child, base string) string {
+	res, ok := strings.CutPrefix(child, filepath.Dir(base))
+	if !ok {
+		fmt.Println(base, child, res)
+		panic("child does not have parent as a prefix!!!!!!")
+	}
+	fmt.Println(base, child, res)
+	return res
+}
+
+type Statuspair struct {
+	pos  int
+	flag int
+}
+
+func (transfer *Transfer) makePool() {
+	work := make(chan int, 500)
+	status := make(chan Statuspair, 500)
+
+	cnt := len(transfer.files)
+	ctx, cancelfunc := context.WithCancel(context.Background())
+	for i := 0; i <= 10; i++ {
+		go transfer.worker(work, status, ctx)
+	}
+
+	go func() {
+		for i := 1; i <= cnt; i++ {
+			work <- i
+		}
+	}()
+
+LISTENER:
+	for {
+		select {
+		case rec := <-status:
+			cnt--
+			transfer.files[rec.pos-1].Status = rec.flag
+			if cnt == 0 {
+				break LISTENER
+			}
+		}
+	}
+
+	cancelfunc()
+}
+
+func (transfer *Transfer) worker(work chan int, status chan Statuspair, ctx context.Context) {
+	for {
+		select {
+		case idx := <-work:
+
+			if err := transfer.skwriter(transfer.files[idx-1]); err != nil {
+				fmt.Println(transfer.files[idx-1].Src,
+					transfer.gen_dest(transfer.files[idx-1].Modsrc),
+					err)
+				status <- Statuspair{idx, -1}
+			} else {
+				fmt.Println(transfer.files[idx-1].Src,
+					transfer.gen_dest(transfer.files[idx-1].Modsrc),
+					err)
+				status <- Statuspair{idx, 1}
+			}
+
+		case <-ctx.Done():
+			return
+		}
+	}
+}
+
+func (transfer *Transfer) skwriter(wrk Work) error {
+	srcfile, err := os.Open(wrk.Src)
+	if err != nil {
+		return err
+	}
+	defer srcfile.Close()
+
+	destfile, err := os.Create(transfer.gen_dest(wrk.Modsrc))
+	if err != nil {
+		return err
+	}
+	defer destfile.Close()
+
+	buffer := make([]byte, 1024*128)
+	written, err := io.CopyBuffer(destfile, srcfile, buffer)
+	if err != nil {
+		return err
+	}
+	transfer.fops.SetDoneWork(written)
+	return nil
+}
+
+func (transfer *Transfer) GetErrList() []string {
+	res := []string{}
+	for _, v := range transfer.files {
+		if v.Status <= 0 {
+			res = append(res, v.Src)
+		}
+	}
+	return res
+}
