@@ -6,6 +6,10 @@ export function AddSelected(arg1) {
   return window['go']['main']['Fops']['AddSelected'](arg1);
 }
 
+export function BeginDeletion() {
+  return window['go']['main']['Fops']['BeginDeletion']();
+}
+
 export function BeginTransfer(arg1) {
   return window['go']['main']['Fops']['BeginTransfer'](arg1);
 }

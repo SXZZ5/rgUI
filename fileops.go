@@ -39,6 +39,11 @@ func (fops *Fops) BeginTransfer(destination string) {
 	fops.RemoveAllSelected()
 }
 
+func (fops *Fops) BeginDeletion() {
+	transfer := Transfer{}
+	transfer.InitDeletion(fops)
+}
+
 func (fops *Fops) GetPercentageCompletion() int {
 	if !fops.transferring {
 		return 100

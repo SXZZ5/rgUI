@@ -24,7 +24,7 @@ export default function FolderContent() {
         sksum.current = 0;
         RemoveAllSelected();
         f();
-    }, [primarybarState_path])
+    }, [primarybarState_path, Skrerender])
 
     let wheelEventEndTimeout = null;
     const handleWheel = (e) => {
@@ -99,9 +99,12 @@ function Item({ object, id }) {
         marginLeft: "5px",
         marginRight: "5px",
         backgroundColor: bgcolor,
-        border: (hovering) ? "solid 1px rgba(0,0,0,1)" : "solid 1px rgba(0,0,0,0)",
+        border: (hovering) ? "solid 1px rgba(0,0,0,0.5)" : "solid 1px rgba(0,0,0,0)",
         cursor: 'default',
-        fontSize: 'clamp(12px, 2vw, 16px)'
+        fontSize: 'clamp(12px, 2vw, 16px)',
+        // transform: hovering ? 'translateY(-1px)' : 'translateY(0)',
+        transition: 'transform 0.1s ease-in-out',
+        boxShadow: hovering ? '2px 2px 5px rgba(0,0,0,0.2)' : 'none',
     }
     const toggle = () => {
         setHovering((prev) => !prev);

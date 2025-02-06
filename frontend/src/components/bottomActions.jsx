@@ -1,7 +1,8 @@
-import { BeginTransfer, CopyCommand, GetPercentageCompletion } from "../../wailsjs/go/main/Fops";
+import { BeginDeletion, BeginTransfer, CopyCommand, GetPercentageCompletion } from "../../wailsjs/go/main/Fops";
 import { LogPrint, WindowSetBackgroundColour } from "../../wailsjs/runtime/runtime";
 import copy from "../assets/images/copy.png"
 import paste from "../assets/images/paste.png"
+import del from "../assets/images/delete.png"
 import { useState, useEffect } from "react";
 import { useFFState } from "../state/filefolderstore";
 import ProgressBar from "../ui/progressbar";
@@ -18,12 +19,17 @@ export default function BottomActions() {
         setTransferring(true);
         console.log("clicked paste button");
     }
+    const deleteHandler = () => {
+        BeginDeletion();
+        console.log("delete button pressed");
+    }
 
     if (!transferring) {
         return (
             <>
                 <Img srci={copy} clickHandler={copyHandler} />
                 <Img srci={paste} clickHandler={pasteHandler} />
+                {/* <Img srci={del} clickHandler={deleteHandler}/> */}
             </>
         )
     } else {
@@ -37,7 +43,7 @@ export default function BottomActions() {
                 clearInterval(ivl)
                 triggerSkrerender();
             }
-        }, 10)
+        }, 200)
 
         return (
             <ProgressBar completion={completion}/>
@@ -60,7 +66,8 @@ function Img({ srci, clickHandler }) {
         // marginBottom: "1px",
         border: (active) ? "solid 1px rgba(0,0,0,1)" : "solid 1px rgba(0,0,0,0)",
         borderRadius: "5px",
-        boxShadow: (active) ? "2px 2px rgba(0,0,0,0.5)" : "none"
+        boxShadow: (active) ? "2px 2px rgba(0,0,0,0.5)" : "none",
+        cursor: "pointer"
     }
     return <img src={srci}
         style={style}

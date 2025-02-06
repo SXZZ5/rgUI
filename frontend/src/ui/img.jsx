@@ -12,7 +12,8 @@ export default function Img({ srci, clickHandler }) {
         marginTop: "2px",
         border: (active) ? "solid 1px rgba(0,0,0,1)" : "solid 1px rgba(0,0,0,0)",
         borderRadius: "5px",
-        boxShadow: (active) ? "2px 2px rgba(0,0,0,0.5)" : "none"
+        boxShadow: (active) ? "2px 2px rgba(0,0,0,0.5)" : "none",
+        cursor: "pointer",
     }
     return <img src={srci}
         style={style}

@@ -10,9 +10,9 @@ import BottomActions from "./bottomActions";
 export default function Sidebar() {
     const { sidebarWidth } = usePaneState();
     const { Skrerender, setSidebarState } = useFFState();
-    useEffect(()=> {
+    useEffect(() => {
         const g = async () => {
-            const res =  await GetConfigData();
+            const res = await GetConfigData();
             console.log(res);
             setSidebarState(res);
         };
@@ -25,12 +25,20 @@ export default function Sidebar() {
         overflowX: 'clip',
         top: "5vh",
         height: "95vh",
-        backgroundColor: "rgba(255,255,255,0)"
+        backgroundColor: "rgba(255,255,255,0.4)",
+    }
+    const separatorStyle = {
+        height: "2px",
+        backgroundColor: "rgba(109, 108, 108, 0.9)",
+        marginLeft: "10px",
+        marginRight: "10px",
+        borderRadius: "6px"
     }
     const val = 30
     return (
         <div style={style} className="Sidebar" >
             <Card height={60} content={"Pinned"} />
+            {/* <div style={separatorStyle}></div> */}
             <Card height={30} content={"Drives"} />
             <AdjustWidth />
         </div>

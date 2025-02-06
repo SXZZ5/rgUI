@@ -12,4 +12,6 @@ export function InitJSON():Promise<void>;
 
 export function PinALocation(arg1:string):Promise<void>;
 
+export function UnpinALocation(arg1:string):Promise<void>;
+
 export function WriteConfigAsJson():Promise<void>;

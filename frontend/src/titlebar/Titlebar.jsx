@@ -31,14 +31,15 @@ function Side_Titlebar() {
         width: `${sidebarWidth}vw`,
         maxWidth: `${sidebarWidth}vw`,
         height: "5vh",
-        backgroundColor: "rgba(0,0,0,0)",
+        // backgroundColor: "rgba(0,0,0,0)",
+        backgroundColor: "rgba(255,255,255,0.4)",
         // overflow: "hidden"
     }
     return (
         <div style={style} className="Side_titlebar">
-            <TrafficLight color="red" f={Quit} />
-            <TrafficLight color="limegreen" f={WindowToggleMaximise} />
-            <TrafficLight color="gold" f={WindowMinimise} />
+            <TrafficLight color="#ff4136" f={Quit} />
+            <TrafficLight color="#ffdc00" f={WindowMinimise} />
+            <TrafficLight color="#2ecc40" f={WindowToggleMaximise} />
         </div>
     )
 }

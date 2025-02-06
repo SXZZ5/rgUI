@@ -25,7 +25,7 @@ type Work struct {
 
 type Transfer struct {
 	files       []Work
-	fops        *Fops
+	caller      *Fops
 	directories []string
 	Destination string
 }
@@ -33,7 +33,7 @@ type Transfer struct {
 func (transfer *Transfer) InitTransfer(caller *Fops, destination string) error {
 	// store caller info in struct only to regularly send updates of how much transfer
 	// is completed.
-	transfer.fops = caller
+	transfer.caller = caller
 	transfer.Destination = destination
 	transfer.files = []Work{}
 
@@ -51,7 +51,7 @@ func (transfer *Transfer) InitTransfer(caller *Fops, destination string) error {
 		}
 		atomic.AddInt64(&caller.totalwork, int64(info.Size()))
 	}
-	caller.sizeCountingDone = true;
+	caller.sizeCountingDone = true
 
 	transfer.directories = []string{}
 	for _, v := range directories {
@@ -160,7 +160,7 @@ func (transfer *Transfer) worker(work chan int, status chan Statuspair, ctx cont
 }
 
 type CustomWriter struct {
-	file *os.File
+	file   *os.File
 	caller *Fops
 }
 
@@ -169,7 +169,6 @@ func (customwriter *CustomWriter) Write(p []byte) (n int, err error) {
 	atomic.AddInt64(&customwriter.caller.donework, int64(internal_n))
 	return internal_n, internal_err
 }
-
 
 func (transfer *Transfer) skwriter(wrk Work) error {
 	srcfile, err := os.Open(wrk.Src)
@@ -184,7 +183,7 @@ func (transfer *Transfer) skwriter(wrk Work) error {
 	}
 	defer destfile.Close()
 
-	customwriter := &CustomWriter{destfile, transfer.fops}
+	customwriter := &CustomWriter{destfile, transfer.caller}
 
 	buffer := make([]byte, 1024*128)
 	_, err = io.CopyBuffer(customwriter, srcfile, buffer)
@@ -202,4 +201,16 @@ func (transfer *Transfer) GetErrList() []string {
 		}
 	}
 	return res
+}
+
+func (transfer *Transfer) InitDeletion(caller *Fops) {
+	fmt.Println("inside init deletion")
+	for _, v := range caller.ToMove {
+		if _, err := os.Stat(v); err != nil {
+			fmt.Println("file may be faulty", v, err)
+		}
+		if err := os.Remove(v); err != nil {
+			fmt.Println(filepath.Base(v), err)
+		}
+	}
 }

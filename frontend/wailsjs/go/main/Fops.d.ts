@@ -4,6 +4,8 @@ import {main} from '../models';
 
 export function AddSelected(arg1:string):Promise<void>;
 
+export function BeginDeletion():Promise<void>;
+
 export function BeginTransfer(arg1:string):Promise<void>;
 
 export function CopyCommand():Promise<void>;

@@ -22,6 +22,10 @@ export function PinALocation(arg1) {
   return window['go']['main']['Config']['PinALocation'](arg1);
 }
 
+export function UnpinALocation(arg1) {
+  return window['go']['main']['Config']['UnpinALocation'](arg1);
+}
+
 export function WriteConfigAsJson() {
   return window['go']['main']['Config']['WriteConfigAsJson']();
 }

@@ -58,6 +58,23 @@ func (config *Config) PinALocation(path string) {
 	config.WriteConfigAsJson()
 }
 
+func (config *Config) UnpinALocation(path string) {
+	pos := -1
+	for i, v := range config.data.Pinned {
+		if v.Path == path {
+			pos = i
+			break
+		}
+	}
+	if pos == -1 {
+		return
+	}
+	res := config.data.Pinned[:pos]
+	res = append(res, config.data.Pinned[pos+1:]...)
+	config.data.Pinned = res
+	config.WriteConfigAsJson()
+}
+
 func (config *Config) InitJSON() {
 	jsonFile, err := os.ReadFile(config.cfgPath)
 	if err != nil {
@@ -88,12 +105,11 @@ func (config *Config) WriteConfigAsJson() error {
 		return err
 	}
 
-	file, err := os.OpenFile(config.cfgPath, os.O_RDWR|os.O_CREATE, 0666)
+	file, err := os.OpenFile(config.cfgPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC|os.O_SYNC, 0666)
 	if err != nil {
 		fmt.Println("error in creating the config file", err)
 		return err
 	}
-
 	file.Write(res)
 	return nil
 }
