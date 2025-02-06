@@ -6,16 +6,16 @@ export function AddSelected(arg1:string):Promise<void>;
 
 export function BeginTransfer(arg1:string):Promise<void>;
 
+export function CopyCommand():Promise<void>;
+
 export function GetDir(arg1:string):Promise<Array<main.SkDirEntry>>;
 
 export function GetParent(arg1:string):Promise<string>;
+
+export function GetPercentageCompletion():Promise<number>;
 
 export function RemoveAllSelected():Promise<void>;
 
 export function RemoveSelected(arg1:string):Promise<void>;
 
 export function Renamer(arg1:string,arg2:string):Promise<void>;
-
-export function SetDoneWork(arg1:number):Promise<void>;
-
-export function SetTotalWork(arg1:number):Promise<void>;

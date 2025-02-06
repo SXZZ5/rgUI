@@ -9,6 +9,7 @@ export default function Card ({height, content}) {
         borderRadius: "5px",
         margin: "5px",
         border: "solid 1px black",
+        cursor: "default"
     }
         
     if (sidebarState[content] != null && sidebarState[content].length > 0) {
@@ -52,7 +53,7 @@ function Item({obj}){
     }
     
     return (
-        <div style={style} onMouseEnter={g} onMouseLeave={g} onClick={handleClick}>
+        <div style={style} onPointerEnter={g} onPointerLeave={g} onClick={handleClick}>
             {obj.Name}
         </div>
     )

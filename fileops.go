@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"sync"
 )
 
 type SkDirEntry struct {
@@ -15,17 +14,24 @@ type SkDirEntry struct {
 }
 
 type Fops struct {
-	ctx       context.Context
-	Selected  []string
-	totalwork int64
-	donework  int64
-	mu        sync.Mutex
+	ctx          context.Context
+	Selected     []string
+	ToMove       []string
+	totalwork    int64
+	donework     int64
+	transferring bool
+	sizeCountingDone bool 
 }
 
 func (fops *Fops) BeginTransfer(destination string) {
+	fops.transferring = true
+	fops.sizeCountingDone = false
+	fops.totalwork = 0
+	fops.donework = 0
+	defer func(fops *Fops) { fops.transferring = false; }(fops)
 	destination = filepath.Clean(destination)
 	fmt.Println("begin transfer requested at destination", destination)
-	fmt.Println("selected file for transfer", fops.Selected)
+	fmt.Println("selected file for transfer", fops.ToMove)
 	transfer := Transfer{}
 	transfer.InitTransfer(fops, destination)
 	errlist := transfer.GetErrList()
@@ -33,16 +39,15 @@ func (fops *Fops) BeginTransfer(destination string) {
 	fops.RemoveAllSelected()
 }
 
-func (fops *Fops) SetDoneWork(z int64) {
-	fops.mu.Lock()
-	fops.donework += z
-	fops.mu.Unlock()
-}
-
-func (fops *Fops) SetTotalWork(z int64) {
-	fops.mu.Lock()
-	fops.totalwork += z
-	fops.mu.Unlock()
+func (fops *Fops) GetPercentageCompletion() int {
+	if !fops.transferring {
+		return 100
+	}
+	if fops.totalwork == 0 || !fops.sizeCountingDone  {
+		return 0
+	}
+	ratio := float64(fops.donework) / float64(fops.totalwork) * 100
+	return int(ratio)
 }
 
 func (fops *Fops) AddSelected(path string) {
@@ -74,6 +79,10 @@ func (fops *Fops) RemoveAllSelected() {
 	fops.Selected = []string{}
 }
 
+func (fops *Fops) CopyCommand() {
+	fops.ToMove = fops.Selected
+}
+
 func (fops *Fops) startup(ctx context.Context) {
 	fops.ctx = ctx
 }
@@ -103,28 +112,6 @@ func (fops *Fops) GetDir(path string) []SkDirEntry {
 }
 
 func (fops *Fops) GetParent(path string) string {
-	// if path[len(path)-1] != '/' {
-	//     path += "/"
-	// }
-
-	// idx := len(path)
-	// cnt := 0
-	// for i:=len(path); i>=1; i-- {
-	//     if path[i-1] != '/' {
-	//         continue
-	//     }
-	//     cnt++
-	//     if cnt == 2 {
-	//         idx = i
-	//         break
-	//     }
-	// }
-
-	// if cnt < 2 {
-	//     return path
-	// } else {
-	//     return path[:idx-1]
-	// }
 	return filepath.Dir(path)
 }
 

@@ -1,10 +1,11 @@
 import { create } from "zustand";
 
 const useFFState = create((set) => ({
-    uid: 1,
-    incrementUid: () => set((state) => {
+    Skrerender: 1,
+    triggerSkrerender: () => set((state) => {
         return {
-            uid: state.uid + 1,
+            ...state,
+            Skrerender: state.Skrerender + 1,
         }
     }),
 
@@ -64,7 +65,11 @@ const useFFState = create((set) => ({
             primarybarState_path: state.primarybarState_history[new_idx-1],
             _idx_primarybarState_history: new_idx,
         }
-    })
+    }),
+
+    
+    transferring: false,
+    setTransferring: (z) => set((state) => { return {transferring: z} }),
 
 }));
 

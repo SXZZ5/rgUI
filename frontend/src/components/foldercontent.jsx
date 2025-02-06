@@ -1,12 +1,17 @@
 import { useState, useEffect, useRef } from "react";
 import { useFFState } from "../state/filefolderstore";
-import { AddSelected, GetDir, RemoveSelected } from "../../wailsjs/go/main/Fops"
+import { AddSelected, GetDir, RemoveAllSelected, RemoveSelected } from "../../wailsjs/go/main/Fops"
 import { PinALocation } from "../../wailsjs/go/main/Config";
 import { LogPrint } from "../../wailsjs/runtime/runtime";
 import { usePaneState } from "../state/panestore";
 
 export default function FolderContent() {
-    const { primarybarState_path, revertPrimarybarState, advancePrimarybarState } = useFFState();
+    const { 
+        primarybarState_path, 
+        revertPrimarybarState, 
+        advancePrimarybarState,
+        Skrerender,
+    } = useFFState();
     const [contents, setContents] = useState([]);
     const [ignoring, setIgnoring] = useState(false);
     const sksum = useRef(0);
@@ -17,6 +22,7 @@ export default function FolderContent() {
             setContents(res);
         }
         sksum.current = 0;
+        RemoveAllSelected();
         f();
     }, [primarybarState_path])
 
@@ -62,7 +68,12 @@ export default function FolderContent() {
             onPointerUp={g}
             onPointerLeave={g}
         >
-            {contents.map((z, index) => <Item object={z} id={index} key={index} />)}
+            {contents.map((z, index) => {
+                //using simply index as the key did not work because when list changes,
+                //and ith item was marked green, new ith item will also have the leftover
+                //green color on it.
+                const key = z.Name + String(index)
+                return <Item object={z} id={index} key={key}/>})}
         </div>
     )
 }
@@ -70,16 +81,18 @@ export default function FolderContent() {
 function Item({ object, id }) {
     const [hovering, setHovering] = useState(false);
     const [selected, setSelected] = useState(false);
-    const { incrementUid, setPrimarybarState } = useFFState();
+    const { triggerSkrerender, setPrimarybarState } = useFFState();
     const { setContextMenuStyle } = usePaneState();
 
     useEffect(()=>{
+        console.log("done mounting")
         return ()=>{
-            setSelected(false);
+            console.log("cleanup of ", object.Name);
+            setSelected((prev) => false);
         }
     },[]);
 
-    //this basically sets greenish color if selected, and if not selected then sets light blue or gray depending on parity of serial number.
+    // this basically sets greenish color if selected, and if not selected then sets light blue or gray depending on parity of serial number.
     const bgcolor = (selected) ? "rgba(127, 255, 212,0.8)" : ((id % 2 == 0) ? "rgba(70, 130, 180,0.2)" : "rgba(220, 220, 220,0.4)")
 
     const style = {
@@ -103,7 +116,7 @@ function Item({ object, id }) {
             console.log("Pinning action done");
             LogPrint("Pinning action done");
             PinALocation(object.Path)
-            incrementUid()
+            triggerSkrerender()
         } else if(e.ctrlKey) {
             console.log("selecting item");
             if (selected) {

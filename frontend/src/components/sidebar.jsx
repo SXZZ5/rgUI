@@ -5,10 +5,11 @@ import { GetConfigData } from "../../wailsjs/go/main/Config";
 import { LogPrint } from "../../wailsjs/runtime/runtime";
 import Card from "../ui/card";
 import { BeginTransfer } from "../../wailsjs/go/main/Fops";
+import BottomActions from "./bottomActions";
 
 export default function Sidebar() {
     const { sidebarWidth } = usePaneState();
-    const { uid, setSidebarState } = useFFState();
+    const { Skrerender, setSidebarState } = useFFState();
     useEffect(()=> {
         const g = async () => {
             const res =  await GetConfigData();
@@ -16,7 +17,7 @@ export default function Sidebar() {
             setSidebarState(res);
         };
         g();
-    }, [uid])
+    }, [Skrerender])
     const style = {
         position: "fixed",
         width: `${sidebarWidth}vw`,
@@ -43,15 +44,17 @@ function AdjustWidth() {
     const { primarybarState_path } = useFFState();
 
     const style = {
-        position: "fixed",
+        position: "absolute",
         top: "100%",
         left: "0%",
         color: "black",
-        height: "fit-content",
-        width: "fit-content",
+        height: "5%",
+        width: "100%",
         padding: "2px",
-        border: "solid 1px black",
-        transform: "translate(0%,-100%)"
+        // border: "solid 1px black",
+        transform: "translate(0%,-100%)",
+        display: "flex",
+        justifyContent: "space-evenly",
     }
 
     const whConstant = 20;
@@ -68,12 +71,8 @@ function AdjustWidth() {
     }, 10)
     return (
         <div id="ssk" style={style} onWheel={wheelHandler}>
-            {sidebarWidth}
-            <button onClick={()=>{
-                BeginTransfer(primarybarState_path)
-            }}>
-                Click to paste here
-            </button>
+            <BottomActions />
         </div>
     )
 }
+

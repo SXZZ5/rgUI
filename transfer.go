@@ -14,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 )
 
 type Work struct {
@@ -37,7 +38,7 @@ func (transfer *Transfer) InitTransfer(caller *Fops, destination string) error {
 	transfer.files = []Work{}
 
 	directories := []string{}
-	for _, v := range caller.Selected {
+	for _, v := range caller.ToMove {
 		info, err := os.Stat(v)
 		if err != nil {
 			transfer = nil
@@ -48,8 +49,9 @@ func (transfer *Transfer) InitTransfer(caller *Fops, destination string) error {
 		} else {
 			transfer.files = append(transfer.files, Work{v, filepath.Base(v), 0})
 		}
-		caller.SetTotalWork(info.Size())
+		atomic.AddInt64(&caller.totalwork, int64(info.Size()))
 	}
+	caller.sizeCountingDone = true;
 
 	transfer.directories = []string{}
 	for _, v := range directories {
@@ -157,6 +159,18 @@ func (transfer *Transfer) worker(work chan int, status chan Statuspair, ctx cont
 	}
 }
 
+type CustomWriter struct {
+	file *os.File
+	caller *Fops
+}
+
+func (customwriter *CustomWriter) Write(p []byte) (n int, err error) {
+	internal_n, internal_err := customwriter.file.Write(p)
+	atomic.AddInt64(&customwriter.caller.donework, int64(internal_n))
+	return internal_n, internal_err
+}
+
+
 func (transfer *Transfer) skwriter(wrk Work) error {
 	srcfile, err := os.Open(wrk.Src)
 	if err != nil {
@@ -170,12 +184,13 @@ func (transfer *Transfer) skwriter(wrk Work) error {
 	}
 	defer destfile.Close()
 
+	customwriter := &CustomWriter{destfile, transfer.fops}
+
 	buffer := make([]byte, 1024*128)
-	written, err := io.CopyBuffer(destfile, srcfile, buffer)
+	_, err = io.CopyBuffer(customwriter, srcfile, buffer)
 	if err != nil {
 		return err
 	}
-	transfer.fops.SetDoneWork(written)
 	return nil
 }
 

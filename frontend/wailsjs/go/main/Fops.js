@@ -10,12 +10,20 @@ export function BeginTransfer(arg1) {
   return window['go']['main']['Fops']['BeginTransfer'](arg1);
 }
 
+export function CopyCommand() {
+  return window['go']['main']['Fops']['CopyCommand']();
+}
+
 export function GetDir(arg1) {
   return window['go']['main']['Fops']['GetDir'](arg1);
 }
 
 export function GetParent(arg1) {
   return window['go']['main']['Fops']['GetParent'](arg1);
+}
+
+export function GetPercentageCompletion() {
+  return window['go']['main']['Fops']['GetPercentageCompletion']();
 }
 
 export function RemoveAllSelected() {
@@ -28,12 +36,4 @@ export function RemoveSelected(arg1) {
 
 export function Renamer(arg1, arg2) {
   return window['go']['main']['Fops']['Renamer'](arg1, arg2);
-}
-
-export function SetDoneWork(arg1) {
-  return window['go']['main']['Fops']['SetDoneWork'](arg1);
-}
-
-export function SetTotalWork(arg1) {
-  return window['go']['main']['Fops']['SetTotalWork'](arg1);
 }
