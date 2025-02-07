@@ -3,6 +3,7 @@ import { LogPrint } from "../../wailsjs/runtime/runtime";
 import {  Drivescheck } from "../../wailsjs/go/main/Config";
 import { Button } from "../ui/button";
 import FolderContent from "./foldercontent";
+import ContextMenu from "./contextMenu";
 
 export default function Primary() {
     const { primarybarWidth, sidebarWidth } = usePaneState();
@@ -11,7 +12,7 @@ export default function Primary() {
         position: "fixed",
         left: `${sidebarWidth}vw`, 
         width: `${primarybarWidth}vw`,
-        marginTop: "5vh",
+        top: "5vh",
         height: "95vh",
         backgroundColor: "whitesmoke",
         overflowY: "scroll",
@@ -19,7 +20,8 @@ export default function Primary() {
     }
 
     return <>
-        <div className="primarybar" style={style}>
+        <div id="primarybar" style={style}>
+            <ContextMenu />
             <FolderContent/>
         </div>
     </>

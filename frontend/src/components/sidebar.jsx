@@ -4,33 +4,41 @@ import { useFFState } from "../state/filefolderstore"
 import { GetConfigData } from "../../wailsjs/go/main/Config";
 import { LogPrint } from "../../wailsjs/runtime/runtime";
 import Card from "../ui/card";
+import { BeginTransfer } from "../../wailsjs/go/main/Fops";
+import BottomActions from "./bottomActions";
 
 export default function Sidebar() {
     const { sidebarWidth } = usePaneState();
-    const { uid, incrementUid,  setSidebarState } = useFFState();
-    useEffect(()=> {
+    const { Skrerender, setSidebarState } = useFFState();
+    useEffect(() => {
         const g = async () => {
-            const res =  await GetConfigData();
+            const res = await GetConfigData();
             console.log(res);
             setSidebarState(res);
         };
         g();
-    }, [])
+    }, [Skrerender])
     const style = {
         position: "fixed",
         width: `${sidebarWidth}vw`,
         maxWidth: `${sidebarWidth}vw`,
         overflowX: 'clip',
-        // flexBasis: `${sidebarWidth}vw`,
-        // flexShrink: "0",
-        marginTop: "5vh",
+        top: "5vh",
         height: "95vh",
-        backgroundColor: "rgba(255,255,255,0)"
+        backgroundColor: "rgba(255,255,255,0.4)",
+    }
+    const separatorStyle = {
+        height: "2px",
+        backgroundColor: "rgba(109, 108, 108, 0.9)",
+        marginLeft: "10px",
+        marginRight: "10px",
+        borderRadius: "6px"
     }
     const val = 30
     return (
-        <div style={style} >
+        <div style={style} className="Sidebar" >
             <Card height={60} content={"Pinned"} />
+            {/* <div style={separatorStyle}></div> */}
             <Card height={30} content={"Drives"} />
             <AdjustWidth />
         </div>
@@ -41,17 +49,20 @@ var pixelsum = 0;
 function AdjustWidth() {
     const [active, setActive] = useState(false);
     const { sidebarWidth, setSidebarWidth } = usePaneState();
+    const { primarybarState_path } = useFFState();
 
     const style = {
-        position: "fixed",
+        position: "absolute",
         top: "100%",
         left: "0%",
         color: "black",
-        height: "fit-content",
-        width: "fit-content",
+        height: "5%",
+        width: "100%",
         padding: "2px",
-        border: "solid 1px black",
-        transform: "translate(0%,-100%)"
+        // border: "solid 1px black",
+        transform: "translate(0%,-100%)",
+        display: "flex",
+        justifyContent: "space-evenly",
     }
 
     const whConstant = 20;
@@ -68,7 +79,8 @@ function AdjustWidth() {
     }, 10)
     return (
         <div id="ssk" style={style} onWheel={wheelHandler}>
-            {sidebarWidth}
+            <BottomActions />
         </div>
     )
 }
+

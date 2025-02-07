@@ -1,12 +1,14 @@
 package main
 
 import (
-	"embed"
 	"context"
+	"embed"
+
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
+    "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 //go:embed all:frontend/dist
@@ -17,30 +19,33 @@ func main() {
 	app := &App{}
 	config := &Config{}
 	fops := &Fops{}
-	// skDirEntry := &SkDirEntry{}
+	registryManager := &RegistryOptions{}
 
 	// Create application with options
 	err := wails.Run(&options.App{
 		Title:  "rgui",
-		Width:  1024,
-		Height: 650,
+		Width:  900,
+		Height: 550,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
 		Frameless: true,
-		OnStartup: func (ctx context.Context) {
-			app.startup(ctx);
-			// skDirEntry.startup(ctx);
-			config.startup(ctx);
-			fops.startup(ctx);
+		MinHeight: 500,
+		MinWidth:  650,
+		OnStartup: func(ctx context.Context) {
+			app.startup(ctx)
+			config.startup(ctx)
+			fops.startup(ctx)
+			registryManager.startup(ctx)
+            runtime.WindowCenter(ctx)
 		},
 		Bind: []interface{}{
 			app,
 			config,
 			fops,
-			// skDirEntry,
+			registryManager,
 		},
-		EnableDefaultContextMenu: false,
+		// EnableDefaultContextMenu: false,
 		Windows: &windows.Options{
 			WebviewIsTransparent: true,
 			WindowIsTranslucent:  true,

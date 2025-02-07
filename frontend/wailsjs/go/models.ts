@@ -1,20 +1,22 @@
 export namespace main {
 	
-	export class PinnedLoc {
-	
+	export class Skinfo {
+	    Name: string;
+	    Path: string;
 	
 	    static createFrom(source: any = {}) {
-	        return new PinnedLoc(source);
+	        return new Skinfo(source);
 	    }
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	
+	        this.Name = source["Name"];
+	        this.Path = source["Path"];
 	    }
 	}
 	export class Data {
-	    Drives: string[];
-	    Pinned: PinnedLoc[];
+	    Drives: Skinfo[];
+	    Pinned: Skinfo[];
 	
 	    static createFrom(source: any = {}) {
 	        return new Data(source);
@@ -22,8 +24,8 @@ export namespace main {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.Drives = source["Drives"];
-	        this.Pinned = this.convertValues(source["Pinned"], PinnedLoc);
+	        this.Drives = this.convertValues(source["Drives"], Skinfo);
+	        this.Pinned = this.convertValues(source["Pinned"], Skinfo);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

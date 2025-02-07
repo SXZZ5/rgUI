@@ -6,16 +6,24 @@ export function Drivescheck() {
   return window['go']['main']['Config']['Drivescheck']();
 }
 
+export function FileLogger(arg1) {
+  return window['go']['main']['Config']['FileLogger'](arg1);
+}
+
 export function GetConfigData() {
   return window['go']['main']['Config']['GetConfigData']();
 }
 
-export function LoadJson() {
-  return window['go']['main']['Config']['LoadJson']();
+export function InitJSON() {
+  return window['go']['main']['Config']['InitJSON']();
 }
 
 export function PinALocation(arg1) {
   return window['go']['main']['Config']['PinALocation'](arg1);
+}
+
+export function UnpinALocation(arg1) {
+  return window['go']['main']['Config']['UnpinALocation'](arg1);
 }
 
 export function WriteConfigAsJson() {

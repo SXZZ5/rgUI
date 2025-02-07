@@ -1,22 +1,26 @@
+import { UnpinALocation } from "../../wailsjs/go/main/Config";
 import { useFFState } from "../state/filefolderstore";
 import { useState } from "react";
 
 export default function Card ({height, content}) {
-    // const {uid, incrementUid, sidebarState} = useFFState();
     const {sidebarState} = useFFState();
 
     const style = {
         height: `${height}%`,
         borderRadius: "5px",
         margin: "5px",
-        border: "solid 1px black",
+        // border: "solid 1px black",
+        cursor: "default",
+        boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.9)",
+        overflowY: "scroll",
+        scrollbarWidth: "none",
     }
         
     if (sidebarState[content] != null && sidebarState[content].length > 0) {
         return (
             <div style={style}>
-                {sidebarState[content].map((z)=>{
-                    return (<Item str={z} key={z} />)
+                {sidebarState[content].map((z,idx)=>{
+                    return (<Item obj={z} key={idx} />)
                 })}
             </div>
         )
@@ -30,31 +34,39 @@ export default function Card ({height, content}) {
     }
 }
 
-function Item({str}){
+function Item({obj}){
     const [hover, setHover] = useState(false);
-    const { setPrimarybarState } = useFFState();
+    const { setPrimarybarState, triggerSkrerender } = useFFState();
     const style={
-        margin: "5px",
-        marginLeft: "3px",
+        margin: "3px",
         fontFamily: "Nunito Sans",
         fontWeight: "600",
-        backgroundColor: (hover) ? "rgba(95, 189, 248, 0.5)" : "rgba(0,0,0,0)",
+        fontSize: "14px",
+        backgroundColor: (hover) ? "rgba(135, 206, 250, 0.4)" : "rgba(0,0,0,0)",
         borderRadius: "10px",
-        paddingLeft: "10px",
-        paddingRight: "10px"
+        paddingLeft: "3px",
+        cursor: "pointer",
+        transform: hover ? 'translateY(-1px)' : 'translateY(0)',
+        transition: 'transform 0.1s ease-in-out',
+        boxShadow: hover ? '2px 2px 5px rgba(0,0,0,0.2)' : 'none',
     }
     
     const g = () => {
         setHover((prev) => !prev);
     }
 
-    const handleClick = () => {
-        setPrimarybarState(str);
+    const handleClick = (e) => {
+        if (e.altKey) {
+            UnpinALocation(obj.Path)
+            triggerSkrerender()
+            return;
+        }
+        setPrimarybarState(obj.Path);
     }
     
     return (
-        <div style={style} onMouseEnter={g} onMouseLeave={g} onClick={handleClick}>
-            {str}
+        <div style={style} onPointerEnter={g} onPointerLeave={g} onClick={handleClick}>
+            {obj.Name}
         </div>
     )
 }
