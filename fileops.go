@@ -14,21 +14,25 @@ type SkDirEntry struct {
 }
 
 type Fops struct {
-	ctx          context.Context
-	Selected     []string
-	ToMove       []string
-	totalwork    int64
-	donework     int64
-	transferring bool
-	sizeCountingDone bool 
+	ctx              context.Context
+	Selected         []string
+	ToMove           []string
+	totalwork        int64
+	donework         int64
+	transferring     bool
+	sizeCountingDone bool
+	Cut              bool
 }
 
 func (fops *Fops) BeginTransfer(destination string) {
+	if len(fops.ToMove) <= 0 {
+		fmt.Println("being transfer: Nothing inside ToMove[]")
+		return
+	}
 	fops.transferring = true
 	fops.sizeCountingDone = false
 	fops.totalwork = 0
 	fops.donework = 0
-	defer func(fops *Fops) { fops.transferring = false; }(fops)
 	destination = filepath.Clean(destination)
 	fmt.Println("begin transfer requested at destination", destination)
 	fmt.Println("selected file for transfer", fops.ToMove)
@@ -36,19 +40,33 @@ func (fops *Fops) BeginTransfer(destination string) {
 	transfer.InitTransfer(fops, destination)
 	errlist := transfer.GetErrList()
 	fmt.Println(errlist)
+	if fops.Cut {
+		fmt.Println("going to begin deletion")
+		fmt.Println(fops)
+		fops.Selected = fops.ToMove
+		fops.BeginDeletion(false)
+	}
 	fops.RemoveAllSelected()
+	fops.transferring = false
+	fmt.Println("Transfer completed")
 }
 
-func (fops *Fops) BeginDeletion() {
+func (fops *Fops) BeginDeletion(flag bool) {
+	if len(fops.Selected) <= 0 {
+		return
+	}
+	fops.transferring = true;
+	//true if you want to move it to recycle bin and false to completely delete
 	transfer := Transfer{}
-	transfer.InitDeletion(fops)
+	transfer.InitDeletion(fops, flag)
+	fops.transferring = false;
 }
 
 func (fops *Fops) GetPercentageCompletion() int {
 	if !fops.transferring {
 		return 100
 	}
-	if fops.totalwork == 0 || !fops.sizeCountingDone  {
+	if fops.totalwork == 0 || !fops.sizeCountingDone {
 		return 0
 	}
 	ratio := float64(fops.donework) / float64(fops.totalwork) * 100
@@ -86,6 +104,14 @@ func (fops *Fops) RemoveAllSelected() {
 
 func (fops *Fops) CopyCommand() {
 	fops.ToMove = fops.Selected
+	fops.Cut = false
+	//copy and cut operations override each other while sharing the underlying selection
+	//and ToMove buffers.
+}
+
+func (fops *Fops) CutCommand() {
+	fops.ToMove = fops.Selected
+	fops.Cut = true
 }
 
 func (fops *Fops) startup(ctx context.Context) {

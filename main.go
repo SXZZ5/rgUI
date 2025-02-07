@@ -19,6 +19,7 @@ func main() {
 	app := &App{}
 	config := &Config{}
 	fops := &Fops{}
+	registryManager := &RegistryOptions{}
 
 	// Create application with options
 	err := wails.Run(&options.App{
@@ -35,12 +36,14 @@ func main() {
 			app.startup(ctx)
 			config.startup(ctx)
 			fops.startup(ctx)
+			registryManager.startup(ctx)
             runtime.WindowCenter(ctx)
 		},
 		Bind: []interface{}{
 			app,
 			config,
 			fops,
+			registryManager,
 		},
 		// EnableDefaultContextMenu: false,
 		Windows: &windows.Options{

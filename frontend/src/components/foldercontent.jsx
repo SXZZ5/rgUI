@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useFFState } from "../state/filefolderstore";
 import { AddSelected, GetDir, RemoveAllSelected, RemoveSelected } from "../../wailsjs/go/main/Fops"
 import { PinALocation } from "../../wailsjs/go/main/Config";
+import { MenuInfoProvider } from "../../wailsjs/go/main/RegistryOptions"
 import { LogPrint } from "../../wailsjs/runtime/runtime";
 import { usePaneState } from "../state/panestore";
 
@@ -82,7 +83,7 @@ function Item({ object, id }) {
     const [hovering, setHovering] = useState(false);
     const [selected, setSelected] = useState(false);
     const { triggerSkrerender, setPrimarybarState } = useFFState();
-    const { setContextMenuStyle } = usePaneState();
+    const { setContextMenuNames, setContextMenuStyle, setContextMenuActivePath } = usePaneState();
 
     useEffect(()=>{
         console.log("done mounting")
@@ -132,11 +133,15 @@ function Item({ object, id }) {
         }
     }
 
-    const contextMenuHandler = (e) => {
+    const contextMenuHandler = async (e) => {
+        e.preventDefault();
+        
         console.log("context menu called at coord:", e.clientX,e.clientY);
         setContextMenuStyle({top: e.clientY, left: e.clientX})
         document.getElementById('contextmenu').showPopover()
-        e.preventDefault();
+        const res = await MenuInfoProvider(object.Path)
+        setContextMenuActivePath(object.Path)
+        setContextMenuNames(res)
     }
 
     return (

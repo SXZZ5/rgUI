@@ -4,6 +4,7 @@ package main
 // . creating worker pool
 // . Copying and writing bytes to a new location.
 // . placing status messages on the channel about success or failure.
+// . deleting files also thanks to lord claude 3.5 sonnet.
 
 import (
 	"context"
@@ -82,6 +83,7 @@ func (transfer *Transfer) InitTransfer(caller *Fops, destination string) error {
 		}
 	}
 	fmt.Println("Verify if directories have been replicated or not")
+	fmt.Println("Transfer Completed")
 	transfer.makePool()
 	return nil
 }
@@ -120,6 +122,8 @@ func (transfer *Transfer) makePool() {
 			work <- i
 		}
 	}()
+
+	fmt.Println("done putting work on work channel", cnt)
 
 LISTENER:
 	for {
@@ -203,14 +207,49 @@ func (transfer *Transfer) GetErrList() []string {
 	return res
 }
 
-func (transfer *Transfer) InitDeletion(caller *Fops) {
+func (transfer *Transfer) InitDeletion(caller *Fops, flag bool) {
 	fmt.Println("inside init deletion")
-	for _, v := range caller.ToMove {
-		if _, err := os.Stat(v); err != nil {
-			fmt.Println("file may be faulty", v, err)
+	for _, v := range caller.Selected {
+		fmt.Println(v)
+		if flag {
+			RecycleBin_Deleter(v)
+		} else {
+			ManualPermanent_Deleter(v)
 		}
-		if err := os.Remove(v); err != nil {
-			fmt.Println(filepath.Base(v), err)
+	}
+	fmt.Println("init deletion finished")
+}
+
+func RecycleBin_Deleter(filePath string) {
+
+	// Check if file exists
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		fmt.Printf("Error: file '%s' does not exist\n", filePath)
+		os.Exit(1)
+	}
+
+	err := MoveToRecycleBin(filePath)
+	if err != nil {
+		fmt.Printf("Error moving file to recycle bin: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("Successfully moved '%s' to recycle bin\n", filePath)
+}
+
+func ManualPermanent_Deleter(filePath string) {
+	info, err := os.Stat(filePath)
+	if err != nil {
+		fmt.Println(filePath, "does not exist")
+		return
+	}
+	if info.IsDir() {
+		if err := os.RemoveAll(filePath); err != nil {
+			fmt.Println(filePath, "deletion error", err)
+		}
+	} else {
+		if err := os.Remove(filePath); err != nil {
+			fmt.Println(filePath, "deletion error", err)
 		}
 	}
 }

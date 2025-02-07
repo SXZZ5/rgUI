@@ -1,8 +1,9 @@
-import { BeginDeletion, BeginTransfer, CopyCommand, GetPercentageCompletion } from "../../wailsjs/go/main/Fops";
+import { BeginDeletion, BeginTransfer, CopyCommand, CutCommand, GetPercentageCompletion } from "../../wailsjs/go/main/Fops";
 import { LogPrint, WindowSetBackgroundColour } from "../../wailsjs/runtime/runtime";
 import copy from "../assets/images/copy.png"
 import paste from "../assets/images/paste.png"
 import del from "../assets/images/delete.png"
+import cut from "../assets/images/cut.png"
 import { useState, useEffect } from "react";
 import { useFFState } from "../state/filefolderstore";
 import ProgressBar from "../ui/progressbar";
@@ -14,13 +15,18 @@ export default function BottomActions() {
         CopyCommand();
         console.log("clicked copy button");
     }
+    const cutHandler = () => {
+        CutCommand();
+    }
     const pasteHandler = () => {
         BeginTransfer(primarybarState_path);
         setTransferring(true);
         console.log("clicked paste button");
     }
+    
     const deleteHandler = () => {
-        BeginDeletion();
+        BeginDeletion(true);
+        setTransferring(true);
         console.log("delete button pressed");
     }
 
@@ -28,8 +34,10 @@ export default function BottomActions() {
         return (
             <>
                 <Img srci={copy} clickHandler={copyHandler} />
+                <Img srci={cut} clickHandler={cutHandler}/>
                 <Img srci={paste} clickHandler={pasteHandler} />
-                {/* <Img srci={del} clickHandler={deleteHandler}/> */}
+                <Img srci={del} clickHandler={deleteHandler}/>
+                
             </>
         )
     } else {

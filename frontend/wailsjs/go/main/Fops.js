@@ -6,8 +6,8 @@ export function AddSelected(arg1) {
   return window['go']['main']['Fops']['AddSelected'](arg1);
 }
 
-export function BeginDeletion() {
-  return window['go']['main']['Fops']['BeginDeletion']();
+export function BeginDeletion(arg1) {
+  return window['go']['main']['Fops']['BeginDeletion'](arg1);
 }
 
 export function BeginTransfer(arg1) {
@@ -16,6 +16,10 @@ export function BeginTransfer(arg1) {
 
 export function CopyCommand() {
   return window['go']['main']['Fops']['CopyCommand']();
+}
+
+export function CutCommand() {
+  return window['go']['main']['Fops']['CutCommand']();
 }
 
 export function GetDir(arg1) {
