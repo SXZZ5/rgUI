@@ -1,4 +1,4 @@
-package main
+package backend
 
 //This file deals with:
 // . creating worker pool

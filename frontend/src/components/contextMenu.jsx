@@ -1,5 +1,6 @@
-import { AddSelected, BeginDeletion, BeginTransfer, CopyCommand, CutCommand, GetParent, RemoveAllSelected } from "../../wailsjs/go/main/Fops";
-import { Executor } from "../../wailsjs/go/main/RegistryOptions";
+import { PinALocation } from "../../wailsjs/go/backend/Config";
+import { AddSelected, BeginDeletion, BeginTransfer, CopyCommand, CutCommand, GetParent, RemoveAllSelected } from "../../wailsjs/go/backend/Fops";
+import { Executor } from "../../wailsjs/go/backend/RegistryOptions";
 import { useFFState } from "../state/filefolderstore";
 import { usePaneState } from "../state/panestore"
 import { useEffect } from "react";
@@ -98,7 +99,7 @@ export default function ContextMenu() {
         z.showPopover();
     }
 
-    const menu_deleteHandler = async (e) => {
+    const menu_deleteHandler = async () => {
         console.log("menu_deleteHandler");
         RemoveAllSelected();
         AddSelected(contextMenuActivePath);
@@ -109,11 +110,18 @@ export default function ContextMenu() {
         hider();
     }
 
+    const menu_pinHandler = async () => {
+        await PinALocation(contextMenuActivePath)
+        triggerSkrerender();
+        hider()
+    }
+
     return <>
         <style>
             {css}
         </style>
         <div id="contextmenu" popover="auto">
+            <ContextMenuItemWithClickHandler str={"Pin"} f={menu_pinHandler}/>
             <ContextMenuItemWithClickHandler str={"Cut"} f={menu_cutHandler} />
             <ContextMenuItemWithClickHandler str={"Copy"} f={menu_copyHandler} />
             <ContextMenuItemWithClickHandler str={"Paste"} f={menu_pasteHandler} />

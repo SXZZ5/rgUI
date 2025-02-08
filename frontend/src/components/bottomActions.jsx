@@ -1,4 +1,4 @@
-import { BeginDeletion, BeginTransfer, CopyCommand, CutCommand, GetPercentageCompletion } from "../../wailsjs/go/main/Fops";
+import { BeginDeletion, BeginTransfer, CopyCommand, CutCommand, GetPercentageCompletion } from "../../wailsjs/go/backend/Fops";
 import { LogPrint, WindowSetBackgroundColour } from "../../wailsjs/runtime/runtime";
 import copy from "../assets/images/copy.png"
 import paste from "../assets/images/paste.png"

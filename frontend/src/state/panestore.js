@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { LogPrint } from '../../wailsjs/runtime/runtime';
+
 const usePaneState = create((set) => ({
     sidebarWidth: 14,
     primarybarWidth: 86,

@@ -1,4 +1,4 @@
-package main
+package backend
 
 import (
 	"context"
@@ -28,7 +28,7 @@ type Config struct {
 	data      Data
 }
 
-func (config *Config) startup(ctx context.Context) {
+func (config *Config) Startup(ctx context.Context) {
 	config.ctx = ctx
 	user_home, err := os.UserHomeDir()
 	if err != nil {

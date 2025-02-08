@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useFFState } from "../state/filefolderstore";
-import { AddSelected, GetDir, RemoveAllSelected, RemoveSelected } from "../../wailsjs/go/main/Fops"
-import { PinALocation } from "../../wailsjs/go/main/Config";
-import { MenuInfoProvider } from "../../wailsjs/go/main/RegistryOptions"
+import { AddSelected, GetDir, RemoveAllSelected, RemoveSelected } from "../../wailsjs/go/backend/Fops"
+import { PinALocation } from "../../wailsjs/go/backend/Config";
+import { MenuInfoProvider } from "../../wailsjs/go/backend/RegistryOptions"
 import { LogPrint } from "../../wailsjs/runtime/runtime";
 import { usePaneState } from "../state/panestore";
 

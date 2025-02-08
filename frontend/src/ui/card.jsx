@@ -1,4 +1,4 @@
-import { UnpinALocation } from "../../wailsjs/go/main/Config";
+import { UnpinALocation } from "../../wailsjs/go/backend/Config";
 import { useFFState } from "../state/filefolderstore";
 import { useState } from "react";
 

@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
 import { usePaneState } from "../state/panestore"
 import { useFFState } from "../state/filefolderstore"
-import { GetConfigData } from "../../wailsjs/go/main/Config";
-import { LogPrint } from "../../wailsjs/runtime/runtime";
+import { GetConfigData } from "../../wailsjs/go/backend/Config";
 import Card from "../ui/card";
-import { BeginTransfer } from "../../wailsjs/go/main/Fops";
 import BottomActions from "./bottomActions";
 
 export default function Sidebar() {

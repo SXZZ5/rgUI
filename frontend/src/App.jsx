@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import logo from './assets/images/logo-universal.png';  
+import { useState } from 'react'; 
 import Panes from './panes/Panes';
 
 function App() {
