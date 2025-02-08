@@ -1,4 +1,4 @@
-import { AddSelected, BeginTransfer, CopyCommand, CutCommand, GetParent, RemoveAllSelected } from "../../wailsjs/go/main/Fops";
+import { AddSelected, BeginDeletion, BeginTransfer, CopyCommand, CutCommand, GetParent, RemoveAllSelected } from "../../wailsjs/go/main/Fops";
 import { Executor } from "../../wailsjs/go/main/RegistryOptions";
 import { useFFState } from "../state/filefolderstore";
 import { usePaneState } from "../state/panestore"
@@ -14,6 +14,7 @@ export default function ContextMenu() {
 
     const {
         setTransferring,
+        triggerSkrerender
     } = useFFState();
 
     const css = `
@@ -68,19 +69,19 @@ export default function ContextMenu() {
         document.getElementById('contextmenu').hidePopover()
     }
 
-    const menu_cutHandler = () => {
+    const menu_cutHandler = async () => {
         console.log("menu_cutHandler");
-        RemoveAllSelected();
-        AddSelected(contextMenuActivePath)
-        CutCommand()
+        await RemoveAllSelected();
+        await AddSelected(contextMenuActivePath)
+        await CutCommand()
         hider();
     }
 
-    const menu_copyHandler = () => {
+    const menu_copyHandler = async () => {
         console.log("menu_copyHandler");
-        RemoveAllSelected();
-        AddSelected(contextMenuActivePath);
-        CopyCommand();
+        await RemoveAllSelected();
+        await AddSelected(contextMenuActivePath);
+        await CopyCommand();
         hider();
     }
 
@@ -88,6 +89,23 @@ export default function ContextMenu() {
         console.log("menu_pasteHandler");
         setTransferring(true);
         BeginTransfer(await GetParent(contextMenuActivePath));
+        hider();
+    }
+
+    const menu_renameHandler = () => {
+        const z = document.getElementById('renamepopup');
+        console.log("rename button clicked");
+        z.showPopover();
+    }
+
+    const menu_deleteHandler = async (e) => {
+        console.log("menu_deleteHandler");
+        RemoveAllSelected();
+        AddSelected(contextMenuActivePath);
+        //hack to not have to define this item separately.
+        const shiftPressed = window.event?.shiftKey;
+        await BeginDeletion(!shiftPressed);
+        triggerSkrerender()
         hider();
     }
 
@@ -99,6 +117,8 @@ export default function ContextMenu() {
             <ContextMenuItemWithClickHandler str={"Cut"} f={menu_cutHandler} />
             <ContextMenuItemWithClickHandler str={"Copy"} f={menu_copyHandler} />
             <ContextMenuItemWithClickHandler str={"Paste"} f={menu_pasteHandler} />
+            <ContextMenuItemWithClickHandler str={"Rename"} f={menu_renameHandler}/>
+            <ContextMenuItemWithClickHandler str={"Delete"} f={menu_deleteHandler}/>
             <hr style={{ margin: "5px 0" }} />
             {contextMenuNames.map((z, idx) => {
                 const key = z + String(idx)

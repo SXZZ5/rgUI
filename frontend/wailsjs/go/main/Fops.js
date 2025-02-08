@@ -22,6 +22,10 @@ export function CutCommand() {
   return window['go']['main']['Fops']['CutCommand']();
 }
 
+export function FileRenamer(arg1, arg2) {
+  return window['go']['main']['Fops']['FileRenamer'](arg1, arg2);
+}
+
 export function GetDir(arg1) {
   return window['go']['main']['Fops']['GetDir'](arg1);
 }

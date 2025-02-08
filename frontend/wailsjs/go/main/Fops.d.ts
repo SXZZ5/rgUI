@@ -12,6 +12,8 @@ export function CopyCommand():Promise<void>;
 
 export function CutCommand():Promise<void>;
 
+export function FileRenamer(arg1:string,arg2:string):Promise<void>;
+
 export function GetDir(arg1:string):Promise<Array<main.SkDirEntry>>;
 
 export function GetParent(arg1:string):Promise<string>;

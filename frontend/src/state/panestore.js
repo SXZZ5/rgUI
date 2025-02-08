@@ -14,7 +14,7 @@ const usePaneState = create((set) => ({
         }
     }),
 
-    contextMenuActivePath: "",
+    contextMenuActivePath: "null",
     contextMenuNames: [],
     contextMenuStyle: {},
     setContextMenuStyle: (z) => set((state) => {

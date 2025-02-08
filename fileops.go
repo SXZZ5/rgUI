@@ -52,14 +52,17 @@ func (fops *Fops) BeginTransfer(destination string) {
 }
 
 func (fops *Fops) BeginDeletion(flag bool) {
+	fmt.Println("Begin deletion called", fops.Selected)
+	//flag true if you want to move it to recycle bin
+	//flag false to completely delete
 	if len(fops.Selected) <= 0 {
 		return
 	}
-	fops.transferring = true;
-	//true if you want to move it to recycle bin and false to completely delete
+	fops.transferring = true
+
 	transfer := Transfer{}
 	transfer.InitDeletion(fops, flag)
-	fops.transferring = false;
+	fops.transferring = false
 }
 
 func (fops *Fops) GetPercentageCompletion() int {
@@ -144,6 +147,20 @@ func (fops *Fops) GetDir(path string) []SkDirEntry {
 
 func (fops *Fops) GetParent(path string) string {
 	return filepath.Dir(path)
+}
+
+func (fops *Fops) FileRenamer(path string, newName string) error {
+
+	_, err := os.Stat(path)
+	if err != nil {
+		return err
+	}
+	parent := filepath.Dir(path)
+	err = os.Rename(path, filepath.Join(parent, newName))
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (fops *Fops) Renamer(path string, newName string) error {

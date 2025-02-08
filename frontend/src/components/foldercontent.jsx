@@ -83,7 +83,12 @@ function Item({ object, id }) {
     const [hovering, setHovering] = useState(false);
     const [selected, setSelected] = useState(false);
     const { triggerSkrerender, setPrimarybarState } = useFFState();
-    const { setContextMenuNames, setContextMenuStyle, setContextMenuActivePath } = usePaneState();
+    const [isRenaming, setIsRenaming] = useState(false)
+    const { 
+        setContextMenuNames, 
+        setContextMenuStyle, 
+        setContextMenuActivePath 
+    } = usePaneState();
 
     useEffect(()=>{
         console.log("done mounting")

@@ -4,6 +4,7 @@ import {  Drivescheck } from "../../wailsjs/go/main/Config";
 import { Button } from "../ui/button";
 import FolderContent from "./foldercontent";
 import ContextMenu from "./contextMenu";
+import Rename from "../ui/rename";
 
 export default function Primary() {
     const { primarybarWidth, sidebarWidth } = usePaneState();
@@ -21,6 +22,7 @@ export default function Primary() {
 
     return <>
         <div id="primarybar" style={style}>
+            <Rename />
             <ContextMenu />
             <FolderContent/>
         </div>
