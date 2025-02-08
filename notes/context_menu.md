@@ -11,6 +11,6 @@
 - item onClick pe Executor ko call karlo aur item ki index de do bas.
 
 #### WHAT DOES NOT WORK
-- Some files types have assosciations with weird encoded names instead of simple ProgIds Go knows what they are supposed to launch. 
+- Some files types have assosciations with weird encoded names instead of simple ProgIds God knows what they are supposed to launch. 
 - Some applications register themselves with some customised protocols instead of giving providing a progID and default command. Such methods of opening a file via customised protocols does not work.
 
