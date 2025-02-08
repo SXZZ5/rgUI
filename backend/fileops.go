@@ -1,4 +1,4 @@
-package main
+package backend
 
 import (
 	"context"
@@ -117,7 +117,7 @@ func (fops *Fops) CutCommand() {
 	fops.Cut = true
 }
 
-func (fops *Fops) startup(ctx context.Context) {
+func (fops *Fops) Startup(ctx context.Context) {
 	fops.ctx = ctx
 }
 

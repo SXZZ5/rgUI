@@ -7,7 +7,7 @@ import backicon from "../assets/images/icon-back.png"
 import fwdicon from "../assets/images/icon-fwd.png"
 import upicon from "../assets/images/icon-up.png"
 import { useFFState } from "../state/filefolderstore.js"
-import { GetParent } from "../../wailsjs/go/main/Fops.js"
+import { GetParent } from "../../wailsjs/go/backend/Fops.js"
 export default function Titlebar() {
     const style = {
         position: "fixed",

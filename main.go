@@ -1,6 +1,8 @@
 package main
 
 import (
+	backend "rgUI/backend"
+
 	"context"
 	"embed"
 
@@ -16,10 +18,10 @@ var assets embed.FS
 
 func main() {
 	// Create an instance of the app structure
-	app := &App{}
-	config := &Config{}
-	fops := &Fops{}
-	registryManager := &RegistryOptions{}
+	app := &backend.App{}
+	config := &backend.Config{}
+	fops := &backend.Fops{}
+	registryManager := &backend.RegistryOptions{}
 
 	// Create application with options
 	err := wails.Run(&options.App{
@@ -33,10 +35,10 @@ func main() {
 		MinHeight: 500,
 		MinWidth:  650,
 		OnStartup: func(ctx context.Context) {
-			app.startup(ctx)
-			config.startup(ctx)
-			fops.startup(ctx)
-			registryManager.startup(ctx)
+			app.Startup(ctx)
+			config.Startup(ctx)
+			fops.Startup(ctx)
+			registryManager.Startup(ctx)
             runtime.WindowCenter(ctx)
 		},
 		Bind: []interface{}{

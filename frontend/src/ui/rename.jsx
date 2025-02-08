@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FileRenamer } from "../../wailsjs/go/main/Fops";
+import { FileRenamer } from "../../wailsjs/go/backend/Fops";
 import { usePaneState } from "../state/panestore";
 import { useFFState } from "../state/filefolderstore";
 

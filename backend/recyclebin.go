@@ -1,7 +1,7 @@
 // CREDITS: CLAUDE 3.5 SONNET
 // My tiny brain was not capable of digesting this Shell API
 
-package main
+package backend
 
 import (
 	"fmt"

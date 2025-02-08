@@ -1,4 +1,4 @@
-package main
+package backend
 
 import (
 	"context"
@@ -23,7 +23,7 @@ type RegistryOptions struct {
 	Records  []CmdRecord
 }
 
-func (reg *RegistryOptions) startup(ctx context.Context) {
+func (reg *RegistryOptions) Startup(ctx context.Context) {
 	reg.ctx = ctx
 }
 
