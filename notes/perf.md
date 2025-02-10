@@ -1,0 +1,3 @@
+- 20k items waale folders me to this is slower than windows explorer by a 100 times. 
+- laude ka react hai. ye yahan use nhi kar sakte wo waha use nhi kar sakte sar dard khali duniya bhar ka
+- 

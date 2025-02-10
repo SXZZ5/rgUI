@@ -1,6 +1,7 @@
 import { UnpinALocation } from "../../wailsjs/go/backend/Config";
 import { useFFState } from "../state/filefolderstore";
 import { useState } from "react";
+import { useRerenderTrigger } from "../state/rerenderTrigger";
 
 export default function Card ({height, content}) {
     const {sidebarState} = useFFState();
@@ -36,7 +37,8 @@ export default function Card ({height, content}) {
 
 function Item({obj}){
     const [hover, setHover] = useState(false);
-    const { setPrimarybarState, triggerSkrerender } = useFFState();
+    const { setPrimarybarState } = useFFState();
+    const { triggerSidebarRerender } = useRerenderTrigger();
     const style={
         margin: "3px",
         fontFamily: "Nunito Sans",
@@ -58,14 +60,15 @@ function Item({obj}){
     const handleClick = (e) => {
         if (e.altKey) {
             UnpinALocation(obj.Path)
-            triggerSkrerender()
+            triggerSidebarRerender();
             return;
         }
+        // triggerPrimarybarRerender(obj.Path);
         setPrimarybarState(obj.Path);
     }
     
     return (
-        <div style={style} onPointerEnter={g} onPointerLeave={g} onClick={handleClick}>
+        <div id={obj.Name} style={style} onPointerEnter={g} onPointerLeave={g} onClick={handleClick}>
             {obj.Name}
         </div>
     )

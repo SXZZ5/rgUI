@@ -5,6 +5,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
+	"sync/atomic"
+	"time"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 type SkDirEntry struct {
@@ -14,25 +19,25 @@ type SkDirEntry struct {
 }
 
 type Fops struct {
-	ctx              context.Context
-	Selected         []string
-	ToMove           []string
-	totalwork        int64
-	donework         int64
-	transferring     bool
-	sizeCountingDone bool
-	Cut              bool
+	ctx       context.Context
+	Selected  []string
+	ToMove    []string
+	totalwork int64
+	donework  int64
+	Cut       bool
 }
 
 func (fops *Fops) BeginTransfer(destination string) {
+	runtime.EventsEmit(fops.ctx, "progress", 0)
 	if len(fops.ToMove) <= 0 {
 		fmt.Println("being transfer: Nothing inside ToMove[]")
+		runtime.EventsEmit(fops.ctx, "progress", 100)
 		return
 	}
-	fops.transferring = true
-	fops.sizeCountingDone = false
-	fops.totalwork = 0
-	fops.donework = 0
+	timcounter := time.Now()
+	fmt.Println("start time",timcounter)
+	atomic.StoreInt64(&fops.totalwork, 0)
+	atomic.StoreInt64(&fops.donework, 0)
 	destination = filepath.Clean(destination)
 	fmt.Println("begin transfer requested at destination", destination)
 	fmt.Println("selected file for transfer", fops.ToMove)
@@ -47,33 +52,35 @@ func (fops *Fops) BeginTransfer(destination string) {
 		fops.BeginDeletion(false)
 	}
 	fops.RemoveAllSelected()
-	fops.transferring = false
+	runtime.EventsEmit(fops.ctx, "progress", 100)
 	fmt.Println("Transfer completed")
+	fmt.Println("ending time", time.Now());
+	fmt.Println("elapsed:", time.Since(timcounter))
 }
 
 func (fops *Fops) BeginDeletion(flag bool) {
 	fmt.Println("Begin deletion called", fops.Selected)
+	runtime.EventsEmit(fops.ctx, "progress", 0)
 	//flag true if you want to move it to recycle bin
 	//flag false to completely delete
 	if len(fops.Selected) <= 0 {
 		return
 	}
-	fops.transferring = true
 
 	transfer := Transfer{}
 	transfer.InitDeletion(fops, flag)
-	fops.transferring = false
+	runtime.EventsEmit(fops.ctx, "progress", 100)
 }
 
-func (fops *Fops) GetPercentageCompletion() int {
-	if !fops.transferring {
-		return 100
-	}
-	if fops.totalwork == 0 || !fops.sizeCountingDone {
-		return 0
-	}
-	ratio := float64(fops.donework) / float64(fops.totalwork) * 100
-	return int(ratio)
+func (fops *Fops) AddDoneWork(z int64) {
+	atomic.AddInt64(&fops.donework, z)
+	aload_donework := atomic.LoadInt64(&fops.donework)
+	alodad_totalwork := atomic.LoadInt64(&fops.totalwork)
+	ratio := int64(float64(aload_donework) / float64(alodad_totalwork) * 100)
+	runtime.EventsEmit(fops.ctx, "progress", ratio)
+}
+func (fops *Fops) AddTotalWork(z int64) {
+	atomic.AddInt64(&fops.totalwork, z)
 }
 
 func (fops *Fops) AddSelected(path string) {
@@ -121,9 +128,9 @@ func (fops *Fops) Startup(ctx context.Context) {
 	fops.ctx = ctx
 }
 
-func (fops *Fops) GetDir(path string) []SkDirEntry {
+func (fops *Fops) GetDir(path string) []string {
 	if path == "null" {
-		return []SkDirEntry{}
+		return []string{}
 	}
 	path += "/"
 	fmt.Println("path called:", path)
@@ -131,36 +138,116 @@ func (fops *Fops) GetDir(path string) []SkDirEntry {
 	if err != nil {
 		fmt.Println("Could not get directory information")
 	}
-	retlist := []SkDirEntry{}
-	hiddenlist := []SkDirEntry{}
+	file_retlist := []string{}
+	file_hiddenlist := []string{}
+	dir_retlist := []string{}
+	dir_hiddenlist := []string{}
+
+	symbol_directory := "🗂️"
+	symbol_document := "📄"
 	for _, v := range list {
-		objpath := path + v.Name()
-		if v.Name()[0] == '.' {
-			hiddenlist = append(hiddenlist, SkDirEntry{v.Name(), objpath, v.IsDir()})
+
+		strname := ""
+		if v.IsDir() {
+			strname = symbol_directory + " " + v.Name()
 		} else {
-			retlist = append(retlist, SkDirEntry{v.Name(), objpath, v.IsDir()})
+			strname = symbol_document + " " + v.Name()
+		}
+		if v.Name()[0] == '.' {
+			if v.IsDir() {
+				dir_hiddenlist = append(dir_hiddenlist, strname)
+			} else {
+				file_hiddenlist = append(file_hiddenlist, strname)
+			}
+		} else {
+			if v.IsDir() {
+				dir_retlist = append(dir_retlist, strname)
+			} else {
+				file_retlist = append(file_retlist, strname)
+			}
 		}
 	}
-	retlist = append(retlist, hiddenlist...)
-	return retlist
+	dir_retlist = append(dir_retlist, file_retlist...)
+	dir_retlist = append(dir_retlist, dir_hiddenlist...)
+	dir_retlist = append(dir_retlist, file_hiddenlist...)
+	fmt.Println(len(dir_retlist))
+	return dir_retlist
+}
+
+func (fops *Fops) GetDirHTML(path string) string {
+	if path == "null" {
+		return ""
+	}
+	path += "/"
+	fmt.Println("path called:", path)
+	list, err := os.ReadDir(path)
+	if err != nil {
+		fmt.Println("Could not get directory information")
+	}
+	file_retlist := []string{}
+	file_hiddenlist := []string{}
+	dir_retlist := []string{}
+	dir_hiddenlist := []string{}
+
+	symbol_directory := "🗂️"
+	symbol_document := "📄"
+	for _, v := range list {
+
+		strname := ""
+		if v.IsDir() {
+			strname = symbol_directory + " " + v.Name()
+		} else {
+			strname = symbol_document + " " + v.Name()
+		}
+		if v.Name()[0] == '.' {
+			if v.IsDir() {
+				dir_hiddenlist = append(dir_hiddenlist, strname)
+			} else {
+				file_hiddenlist = append(file_hiddenlist, strname)
+			}
+		} else {
+			if v.IsDir() {
+				dir_retlist = append(dir_retlist, strname)
+			} else {
+				file_retlist = append(file_retlist, strname)
+			}
+		}
+	}
+	dir_retlist = append(dir_retlist, file_retlist...)
+	dir_retlist = append(dir_retlist, dir_hiddenlist...)
+	dir_retlist = append(dir_retlist, file_hiddenlist...)
+	fmt.Println(len(dir_retlist))
+	return generateEntityListHTML(dir_retlist)
+}
+
+func generateEntityListHTML(names []string) string {
+	var html strings.Builder
+
+	html.WriteString(`<div id="entity-container">`)
+	for _, name := range names {
+		html.WriteString(fmt.Sprintf(`
+            <div class="entity">
+                <div class="entity-name">%s</div>
+            </div>`,
+			name,
+		))
+	}
+	html.WriteString("</div>")
+	return html.String()
 }
 
 func (fops *Fops) GetParent(path string) string {
 	return filepath.Dir(path)
 }
 
-func (fops *Fops) FileRenamer(path string, newName string) error {
-
+func (fops *Fops) FileRenamer(path string, newName string) bool {
 	_, err := os.Stat(path)
 	if err != nil {
-		return err
+		return false
 	}
 	parent := filepath.Dir(path)
 	err = os.Rename(path, filepath.Join(parent, newName))
-	if err != nil {
-		return err
-	}
-	return nil
+	return err == nil
 }
 
 func (fops *Fops) Renamer(path string, newName string) error {

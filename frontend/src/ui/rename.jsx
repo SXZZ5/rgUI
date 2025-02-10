@@ -2,20 +2,27 @@ import { useState } from "react";
 import { FileRenamer } from "../../wailsjs/go/backend/Fops";
 import { usePaneState } from "../state/panestore";
 import { useFFState } from "../state/filefolderstore";
+import { useRerenderTrigger } from "../state/rerenderTrigger";
 
 export default function Rename() {
     const [text, setText] = useState("");
-    const {contextMenuActivePath} = usePaneState();
-    const {triggerSkrerender} = useFFState();
+    const {contextMenuActivePath, contextMenuActiveDivId} = usePaneState();
+    // const {triggerPrimarybarRerender} = useRerenderTrigger();
 
     const handleChange = (event) => {
         setText(event.target.value);
     };
 
     const attemptRename = async () => {
-        await FileRenamer(contextMenuActivePath,text)
+        const res = await FileRenamer(contextMenuActivePath,text)
         document.getElementById("renamepopup").hidePopover()
-        triggerSkrerender()
+        if(res == true) {
+            console.log("true result from FileRenamer");
+            const elem = document.getElementById(contextMenuActiveDivId);
+            const prefix = elem.innerText.slice(0,2)
+            console.log(prefix, prefix + text);
+            elem.innerText = prefix + text;
+        }
     }
 
     const css = `

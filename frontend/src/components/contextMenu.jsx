@@ -15,8 +15,9 @@ export default function ContextMenu() {
 
     const {
         setTransferring,
-        triggerSkrerender
+        primarybarState_path
     } = useFFState();
+
 
     const css = `
         #contextmenu:popover-open {
@@ -36,7 +37,7 @@ export default function ContextMenu() {
         }
     `
     useEffect(() => {
-        console.log("popover's useEffect executing");
+        // console.log("popover's useEffect executing");
         const parent = document.getElementById('primarybar');
         const menu = document.getElementById('contextmenu');
 
@@ -45,8 +46,8 @@ export default function ContextMenu() {
         const menubottom = menu.offsetTop + menu.offsetHeight;
         const menuright = menu.offsetLeft + menu.offsetWidth;
 
-        console.log("parentbottom:", parentbottom, " menubottom:", menubottom);
-        console.log("parentright:", parentright, " menuright:", menuright)
+        // console.log("parentbottom:", parentbottom, " menubottom:", menubottom);
+        // console.log("parentright:", parentright, " menuright:", menuright)
         let newtop = menu.offsetTop, newleft = menu.offsetLeft
         let flag = false;
         if (menubottom > parentbottom) {
@@ -105,14 +106,15 @@ export default function ContextMenu() {
         AddSelected(contextMenuActivePath);
         //hack to not have to define this item separately.
         const shiftPressed = window.event?.shiftKey;
+        setTransferring(true);
         await BeginDeletion(!shiftPressed);
-        triggerSkrerender()
+        console.log(primarybarState_path)
         hider();
     }
 
     const menu_pinHandler = async () => {
         await PinALocation(contextMenuActivePath)
-        triggerSkrerender();
+        triggerSidebarRerender();
         hider()
     }
 
@@ -137,6 +139,7 @@ export default function ContextMenu() {
 }
 
 import { useState } from 'react';
+import { useRerenderTrigger } from "../state/rerenderTrigger";
 
 function ContextMenuItem({ str, id }) {
     const [isHovering, setIsHovering] = useState(false);

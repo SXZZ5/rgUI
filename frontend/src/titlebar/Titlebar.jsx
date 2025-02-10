@@ -1,4 +1,4 @@
-import { LogPrint, Quit, WindowMinimise, WindowToggleMaximise } from "../../wailsjs/runtime/runtime.js"
+import { Quit, WindowMinimise, WindowToggleMaximise } from "../../wailsjs/runtime/runtime.js"
 import TrafficLight from "../ui/trafficlight.jsx"
 import ResizeHandle from "../ui/resizeHandle.jsx"
 import Img from "../ui/img.jsx"

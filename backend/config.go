@@ -53,12 +53,14 @@ func (config *Config) GetConfigData() Data {
 }
 
 func (config *Config) PinALocation(path string) {
+	path = filepath.Clean(path)
 	item := Skinfo{filepath.Base(path), path}
 	config.data.Pinned = append(config.data.Pinned, item)
 	config.WriteConfigAsJson()
 }
 
 func (config *Config) UnpinALocation(path string) {
+	path = filepath.Clean(path)
 	pos := -1
 	for i, v := range config.data.Pinned {
 		if v.Path == path {

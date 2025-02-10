@@ -1,0 +1,25 @@
+.folder-item {
+    margin-left: 5px;
+    margin-right: 5px;
+    cursor: default;
+    font-size: clamp(12px, 2vw, 16px);
+    transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out, background-color 0.2s ease;
+    border: solid 1px transparent;
+}
+
+.folder-item:nth-child(even) {
+    background-color: rgba(70, 130, 180, 0.1);
+}
+
+.folder-item:nth-child(odd) {
+    background-color: rgba(220, 220, 220, 0.1);
+}
+
+.folder-item:hover {
+    border: solid 1px rgba(0,0,0,0.5);
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+}
+
+.folder-item.selected {
+    background-color: rgba(127, 255, 212, 0.8);
+}
