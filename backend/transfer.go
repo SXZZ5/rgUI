@@ -9,13 +9,11 @@ package backend
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
-	"sync/atomic"
 )
 
 type Work struct {
@@ -38,6 +36,8 @@ func (transfer *Transfer) InitTransfer(caller *Fops, destination string) error {
 	transfer.Destination = destination
 	transfer.files = []Work{}
 
+	// fmt.Println(caller.ToMove)
+
 	directories := []string{}
 	for _, v := range caller.ToMove {
 		info, err := os.Stat(v)
@@ -50,9 +50,8 @@ func (transfer *Transfer) InitTransfer(caller *Fops, destination string) error {
 		} else {
 			transfer.files = append(transfer.files, Work{v, filepath.Base(v), 0})
 		}
-		atomic.AddInt64(&caller.totalwork, int64(info.Size()))
+		caller.AddTotalWork(int64(info.Size()))
 	}
-	caller.sizeCountingDone = true
 
 	transfer.directories = []string{}
 	for _, v := range directories {
@@ -60,7 +59,7 @@ func (transfer *Transfer) InitTransfer(caller *Fops, destination string) error {
 			if tmperr != nil {
 				return errors.New("something bad happened during WalkDir")
 			}
-			fmt.Println("Walkdir", path, tmperr)
+			// fmt.Println("Walkdir", path, tmperr)
 			if !d.IsDir() {
 				transfer.files = append(transfer.files, Work{path, CutPrefix_(path, v), 0})
 			} else {
@@ -82,9 +81,11 @@ func (transfer *Transfer) InitTransfer(caller *Fops, destination string) error {
 			return err
 		}
 	}
-	fmt.Println("Verify if directories have been replicated or not")
-	fmt.Println("Transfer Completed")
+	// fmt.Println("Verify if directories have been replicated or not")
+	// fmt.Println("Size of transfer.files", unsafe.Sizeof(transfer.files))
+	// fmt.Println("Size of directories stringslice", unsafe.Sizeof(directories))
 	transfer.makePool()
+	// fmt.Println("Transfer Completed")
 	return nil
 }
 
@@ -95,10 +96,10 @@ func (transfer *Transfer) gen_dest(src string) string {
 func CutPrefix_(child, base string) string {
 	res, ok := strings.CutPrefix(child, filepath.Dir(base))
 	if !ok {
-		fmt.Println(base, child, res)
+		// fmt.Println(base, child, res)
 		panic("child does not have parent as a prefix!!!!!!")
 	}
-	fmt.Println(base, child, res)
+	// fmt.Println(base, child, res)
 	return res
 }
 
@@ -108,56 +109,62 @@ type Statuspair struct {
 }
 
 func (transfer *Transfer) makePool() {
-	work := make(chan int, 500)
-	status := make(chan Statuspair, 500)
+	worklen := len(transfer.files)
+	work := make(chan int, worklen)
+	status := make(chan Statuspair, worklen)
 
-	cnt := len(transfer.files)
 	ctx, cancelfunc := context.WithCancel(context.Background())
-	for i := 0; i <= 10; i++ {
+	for i := 0; i <= 50; i++ {
 		go transfer.worker(work, status, ctx)
 	}
 
 	go func() {
-		for i := 1; i <= cnt; i++ {
+		for i := 1; i <= len(transfer.files); i++ {
 			work <- i
+			// fmt.Println("put on queue", i)
 		}
 	}()
 
-	fmt.Println("done putting work on work channel", cnt)
+	// fmt.Println("beginning monitoring statuses", cnt)
 
-LISTENER:
-	for {
-		select {
-		case rec := <-status:
-			cnt--
-			transfer.files[rec.pos-1].Status = rec.flag
-			if cnt == 0 {
-				break LISTENER
-			}
+	fwd := 0
+	cnt := len(transfer.files)
+	for rec := range status {
+		cnt--
+		fwd++
+		// fmt.Println("fwd",fwd);
+		transfer.files[rec.pos-1].Status = rec.flag
+		if cnt == 0 {
+			// fmt.Println("count reached zero")
+			// fmt.Println("going to exit listening loop")
+			// fmt.Println("transfer is finished according to my code")
+			break
 		}
 	}
 
 	cancelfunc()
+	// fmt.Println("TRANSFERS FINISHED")
 }
 
 func (transfer *Transfer) worker(work chan int, status chan Statuspair, ctx context.Context) {
 	for {
 		select {
 		case idx := <-work:
+			// fmt.Println("worker picked", idx)
 
 			if err := transfer.skwriter(transfer.files[idx-1]); err != nil {
-				fmt.Println(transfer.files[idx-1].Src,
-					transfer.gen_dest(transfer.files[idx-1].Modsrc),
-					err)
+				// fmt.Println(transfer.files[idx-1].Src,
+				// 	transfer.gen_dest(transfer.files[idx-1].Modsrc),
+				// 	err)
 				status <- Statuspair{idx, -1}
 			} else {
-				fmt.Println(transfer.files[idx-1].Src,
-					transfer.gen_dest(transfer.files[idx-1].Modsrc),
-					err)
+				// fmt.Println(transfer.files[idx-1].Src,
+				// 	transfer.gen_dest(transfer.files[idx-1].Modsrc),
+				// 	err)
 				status <- Statuspair{idx, 1}
 			}
 
-		case <-ctx.Done():
+		case _ = <-ctx.Done():
 			return
 		}
 	}
@@ -166,11 +173,12 @@ func (transfer *Transfer) worker(work chan int, status chan Statuspair, ctx cont
 type CustomWriter struct {
 	file   *os.File
 	caller *Fops
+	buffer []byte
 }
 
 func (customwriter *CustomWriter) Write(p []byte) (n int, err error) {
 	internal_n, internal_err := customwriter.file.Write(p)
-	atomic.AddInt64(&customwriter.caller.donework, int64(internal_n))
+	customwriter.caller.AddDoneWork(int64(internal_n))
 	return internal_n, internal_err
 }
 
@@ -179,21 +187,22 @@ func (transfer *Transfer) skwriter(wrk Work) error {
 	if err != nil {
 		return err
 	}
-	defer srcfile.Close()
 
 	destfile, err := os.Create(transfer.gen_dest(wrk.Modsrc))
 	if err != nil {
 		return err
 	}
-	defer destfile.Close()
 
-	customwriter := &CustomWriter{destfile, transfer.caller}
+	customwriter := &CustomWriter{destfile, transfer.caller, make([]byte, 1024*128)}
 
-	buffer := make([]byte, 1024*128)
-	_, err = io.CopyBuffer(customwriter, srcfile, buffer)
+	_, err = io.CopyBuffer(customwriter, srcfile, customwriter.buffer)
 	if err != nil {
 		return err
 	}
+	srcfile.Close()
+	customwriter.file.Close()
+	// fmt.Println("closed srcfile and destfile")
+	customwriter.buffer = nil
 	return nil
 }
 
@@ -208,48 +217,48 @@ func (transfer *Transfer) GetErrList() []string {
 }
 
 func (transfer *Transfer) InitDeletion(caller *Fops, flag bool) {
-	fmt.Println("inside init deletion")
+	// fmt.Println("inside init deletion")
 	for _, v := range caller.Selected {
-		fmt.Println(v)
+		// fmt.Println(v)
 		if flag {
 			RecycleBin_Deleter(v)
 		} else {
 			ManualPermanent_Deleter(v)
 		}
 	}
-	fmt.Println("init deletion finished")
+	// fmt.Println("init deletion finished")
 }
 
 func RecycleBin_Deleter(filePath string) {
 
 	// Check if file exists
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		fmt.Printf("Error: file '%s' does not exist\n", filePath)
+		// fmt.Printf("Error: file '%s' does not exist\n", filePath)
 		os.Exit(1)
 	}
 
 	err := MoveToRecycleBin(filePath)
 	if err != nil {
-		fmt.Printf("Error moving file to recycle bin: %v\n", err)
+		// fmt.Printf("Error moving file to recycle bin: %v\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("Successfully moved '%s' to recycle bin\n", filePath)
+	// fmt.Printf("Successfully moved '%s' to recycle bin\n", filePath)
 }
 
 func ManualPermanent_Deleter(filePath string) {
 	info, err := os.Stat(filePath)
 	if err != nil {
-		fmt.Println(filePath, "does not exist")
+		// fmt.Println(filePath, "does not exist")
 		return
 	}
 	if info.IsDir() {
 		if err := os.RemoveAll(filePath); err != nil {
-			fmt.Println(filePath, "deletion error", err)
+			// fmt.Println(filePath, "deletion error", err)
 		}
 	} else {
 		if err := os.Remove(filePath); err != nil {
-			fmt.Println(filePath, "deletion error", err)
+			// fmt.Println(filePath, "deletion error", err)
 		}
 	}
 }

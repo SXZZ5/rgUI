@@ -3,7 +3,7 @@ export default function ProgressBar({ completion }) {
         width: `${completion}%`,
         height: "100%",
         backgroundColor: "green",
-        transition: "width 0.5s ease-in-out",
+        // transition: "width 0.5s ease-in-out",
     };
 
     const containerStyle = {

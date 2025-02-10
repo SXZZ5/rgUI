@@ -4,10 +4,14 @@ import { useFFState } from "../state/filefolderstore"
 import { GetConfigData } from "../../wailsjs/go/backend/Config";
 import Card from "../ui/card";
 import BottomActions from "./bottomActions";
+import { useRerenderTrigger } from "../state/rerenderTrigger";
 
 export default function Sidebar() {
     const { sidebarWidth } = usePaneState();
-    const { Skrerender, setSidebarState } = useFFState();
+    const { 
+        sidebarRerender
+    } = useRerenderTrigger();
+    const { setSidebarState } = useFFState();
     useEffect(() => {
         const g = async () => {
             const res = await GetConfigData();
@@ -15,7 +19,7 @@ export default function Sidebar() {
             setSidebarState(res);
         };
         g();
-    }, [Skrerender])
+    }, [sidebarRerender])
     const style = {
         position: "fixed",
         width: `${sidebarWidth}vw`,
@@ -25,18 +29,10 @@ export default function Sidebar() {
         height: "95vh",
         backgroundColor: "rgba(255,255,255,0.4)",
     }
-    const separatorStyle = {
-        height: "2px",
-        backgroundColor: "rgba(109, 108, 108, 0.9)",
-        marginLeft: "10px",
-        marginRight: "10px",
-        borderRadius: "6px"
-    }
     const val = 30
     return (
         <div style={style} className="Sidebar" >
             <Card height={60} content={"Pinned"} />
-            {/* <div style={separatorStyle}></div> */}
             <Card height={30} content={"Drives"} />
             <AdjustWidth />
         </div>
@@ -46,8 +42,8 @@ export default function Sidebar() {
 var pixelsum = 0;
 function AdjustWidth() {
     const [active, setActive] = useState(false);
-    const { sidebarWidth, setSidebarWidth } = usePaneState();
-    const { primarybarState_path } = useFFState();
+    const { setSidebarWidth } = usePaneState();
+    // const { primarybarState_path } = useFFState();
 
     const style = {
         position: "absolute",

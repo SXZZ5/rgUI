@@ -1,19 +1,12 @@
-# README
+# File Manager
 
-## About
 
-This is the official Wails React template.
+### NOTEs/TODOS:
+- File manager is easy to write but hard to get right. The responsibility of not messing with the user's data no matter what happens is huge. 
+- Will have to go down the checksum route I think.
+- Will have to spend another day or two on error handling and presentation, stuff like this file already exists, doesn't exist, os did not let me write etc etc. 
+- Event based pagination to minimise first contentful paint and thereafter page size can be increased exponentially. 
+- React wasn't fast enough at rendering huuuge lists (~20k items). The problem is even with pagination, the total computation is O(n^2) with react even thought the reconciler might manage to keep dom updates O(n). Simply creating the Virutal DOM for every incremental prefix of a paginated list is not so nice for 1e4 magnitudes. 
+- Solution was vanilla javascript dom manipulation. Mutation isn't so bad when done right. But, its mixed up with react style ui updates and not sure how buggy it might be, however looks fine as of now. 
+- If you really want to be crazy about it, node pooling is also a thing. 
 
-You can configure the project by editing `wails.json`. More information about the project settings can be found
-here: https://wails.io/docs/reference/project-config
-
-## Live Development
-
-To run in live development mode, run `wails dev` in the project directory. This will run a Vite development
-server that will provide very fast hot reload of your frontend changes. If you want to develop in a browser
-and have access to your Go methods, there is also a dev server that runs on http://localhost:34115. Connect
-to this in your browser, and you can call your Go code from devtools.
-
-## Building
-
-To build a redistributable, production mode package, use `wails build`.
