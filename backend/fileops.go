@@ -29,21 +29,19 @@ type Fops struct {
 
 func (fops *Fops) BeginTransfer(destination string) {
 	runtime.EventsEmit(fops.ctx, "progress", 0)
+	defer runtime.EventsEmit(fops.ctx, "progress",100)
 	if len(fops.ToMove) <= 0 {
 		fmt.Println("being transfer: Nothing inside ToMove[]")
-		runtime.EventsEmit(fops.ctx, "progress", 100)
 		return
 	}
 	timcounter := time.Now()
-	fmt.Println("start time",timcounter)
 	atomic.StoreInt64(&fops.totalwork, 0)
 	atomic.StoreInt64(&fops.donework, 0)
 	destination = filepath.Clean(destination)
 	fmt.Println("begin transfer requested at destination", destination)
-	fmt.Println("selected file for transfer", fops.ToMove)
+	fmt.Println("selected files for transfer", fops.ToMove)
 	transfer := Transfer{}
-	transfer.InitTransfer(fops, destination)
-	errlist := transfer.GetErrList()
+	errlist := transfer.InitTransfer(fops, destination, false)
 	fmt.Println(errlist)
 	if fops.Cut {
 		fmt.Println("going to begin deletion")
@@ -52,9 +50,7 @@ func (fops *Fops) BeginTransfer(destination string) {
 		fops.BeginDeletion(false)
 	}
 	fops.RemoveAllSelected()
-	runtime.EventsEmit(fops.ctx, "progress", 100)
 	fmt.Println("Transfer completed")
-	fmt.Println("ending time", time.Now());
 	fmt.Println("elapsed:", time.Since(timcounter))
 }
 
