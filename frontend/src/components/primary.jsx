@@ -4,6 +4,7 @@ import { usePaneState } from "../state/panestore"
 import ContextMenu from "./contextMenu";
 import Rename from "../ui/rename";
 import FFolderContent from "./fFoldercontent";
+import Results from "./results";
 
 export default function Primary() {
     const { primarybarWidth, sidebarWidth } = usePaneState();
@@ -21,6 +22,7 @@ export default function Primary() {
 
     return <>
         <div id="primarybar" style={style}>
+            <Results/>
             <Rename />
             <ContextMenu />
             <FFolderContent />

@@ -61,7 +61,7 @@ func (reg *RegistryOptions) DirectoryHandler(path string) {
 		// Properly parse the command
 		cmdParts := parseCommand(defaultValue, path)
 		if len(cmdParts) == 0 {
-			fmt.Println("Skipping invalid command:", defaultValue)
+			// fmt.Println("Skipping invalid command:", defaultValue)
 			continue
 		}
 
@@ -139,11 +139,11 @@ func (reg *RegistryOptions) FileHandler(path string) {
 		return
 	}
 	fmt.Println("read the values successfully")
-	fmt.Println(values)
+	// fmt.Println(values)
 	for _, z := range values {
 		executable, err := GetAppPathFromProgID(z)
 		if err != nil {
-			fmt.Println("err in progId", z, err)
+			// fmt.Println("err in progId", z, err)
 		}
 		reg.KeyNames = append(reg.KeyNames, z)
 		reg.Records = append(reg.Records, CmdRecord{executable, []string{path}})
@@ -171,7 +171,7 @@ func GetAppPathFromProgID(progID string) (string, error) {
 	if len(parts) > 1 {
 		return parts[1], nil
 	}
-	fmt.Println("exepath retrieved:", exePath)
+	// fmt.Println("exepath retrieved:", exePath)
 	return exePath, nil
 }
 
@@ -197,7 +197,7 @@ func (reg *RegistryOptions) MenuInfoProvider(path string) []string {
 	} else {
 		reg.FileHandler(path)
 	}
-	fmt.Println(reg.KeyNames)
-	fmt.Println(reg.Records)
+	// fmt.Println(reg.KeyNames)
+	// fmt.Println(reg.Records)
 	return reg.KeyNames
 }

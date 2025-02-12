@@ -80,7 +80,7 @@ func (config *Config) UnpinALocation(path string) {
 func (config *Config) InitJSON() {
 	jsonFile, err := os.ReadFile(config.cfgPath)
 	if err != nil {
-		config.FileLogger("Config probably did not exist", err)
+		// config.FileLogger("Config probably did not exist", err)
 		config.data.Drives = config.Drivescheck()
 		config.data.Pinned = []Skinfo{}
 		config.WriteConfigAsJson()
@@ -90,11 +90,11 @@ func (config *Config) InitJSON() {
 	data := Data{}
 	err = json.Unmarshal(jsonFile, &data)
 	if err != nil {
-		config.FileLogger("error in unmarshalling", err)
+		// config.FileLogger("error in unmarshalling", err)
 		return
 	}
-	config.FileLogger("JSON that was read from file", jsonFile)
-	config.FileLogger("JSON loaded data", data)
+	// config.FileLogger("JSON that was read from file", jsonFile)
+	// config.FileLogger("JSON loaded data", data)
 	data.Drives = config.Drivescheck()
 	config.data = data
 	config.WriteConfigAsJson()

@@ -18,8 +18,8 @@ export function BeginDeletion(arg1) {
   return window['go']['backend']['Fops']['BeginDeletion'](arg1);
 }
 
-export function BeginTransfer(arg1) {
-  return window['go']['backend']['Fops']['BeginTransfer'](arg1);
+export function BeginTransfer(arg1, arg2) {
+  return window['go']['backend']['Fops']['BeginTransfer'](arg1, arg2);
 }
 
 export function CopyCommand() {
@@ -30,20 +30,16 @@ export function CutCommand() {
   return window['go']['backend']['Fops']['CutCommand']();
 }
 
+export function FileLogger(arg1) {
+  return window['go']['backend']['Fops']['FileLogger'](arg1);
+}
+
 export function FileRenamer(arg1, arg2) {
   return window['go']['backend']['Fops']['FileRenamer'](arg1, arg2);
 }
 
-export function GetDir(arg1) {
-  return window['go']['backend']['Fops']['GetDir'](arg1);
-}
-
 export function GetDirEvents(arg1) {
   return window['go']['backend']['Fops']['GetDirEvents'](arg1);
-}
-
-export function GetDirHTML(arg1) {
-  return window['go']['backend']['Fops']['GetDirHTML'](arg1);
 }
 
 export function GetParent(arg1) {

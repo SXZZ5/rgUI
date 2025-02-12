@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync/atomic"
 	"time"
 
@@ -22,29 +21,27 @@ type Fops struct {
 	ctx       context.Context
 	Selected  []string
 	ToMove    []string
-	totalwork int64
-	donework  int64
+	totalwork atomic.Uint64
+	donework  atomic.Uint64
 	Cut       bool
 }
 
-func (fops *Fops) BeginTransfer(destination string) {
+func (fops *Fops) BeginTransfer(destination string, overwrite bool) {
 	runtime.EventsEmit(fops.ctx, "progress", 0)
+	defer runtime.EventsEmit(fops.ctx, "progress", 100)
 	if len(fops.ToMove) <= 0 {
 		fmt.Println("being transfer: Nothing inside ToMove[]")
-		runtime.EventsEmit(fops.ctx, "progress", 100)
 		return
 	}
 	timcounter := time.Now()
-	fmt.Println("start time",timcounter)
-	atomic.StoreInt64(&fops.totalwork, 0)
-	atomic.StoreInt64(&fops.donework, 0)
+	fops.donework.Store(0)
+	fops.totalwork.Store(0)
 	destination = filepath.Clean(destination)
 	fmt.Println("begin transfer requested at destination", destination)
-	fmt.Println("selected file for transfer", fops.ToMove)
+	fmt.Println("selected files for transfer", fops.ToMove)
 	transfer := Transfer{}
-	transfer.InitTransfer(fops, destination)
-	errlist := transfer.GetErrList()
-	fmt.Println(errlist)
+	errlist := transfer.InitTransfer(fops, destination, overwrite)
+	fops.FileLogger(errlist)
 	if fops.Cut {
 		fmt.Println("going to begin deletion")
 		fmt.Println(fops)
@@ -52,10 +49,23 @@ func (fops *Fops) BeginTransfer(destination string) {
 		fops.BeginDeletion(false)
 	}
 	fops.RemoveAllSelected()
-	runtime.EventsEmit(fops.ctx, "progress", 100)
 	fmt.Println("Transfer completed")
-	fmt.Println("ending time", time.Now());
 	fmt.Println("elapsed:", time.Since(timcounter))
+
+	results := struct {
+		Status   string
+		Contents TransferError
+	}{}
+	if len(errlist.StatErrors) > 0 || len(errlist.IOErrors) > 0 {
+		results.Status = "problems"
+		results.Contents = errlist
+	} else {
+		results.Status = "success"
+		results.Contents = errlist
+	}
+
+	fmt.Println(results)
+	runtime.EventsEmit(fops.ctx, "transfer_results", results)
 }
 
 func (fops *Fops) BeginDeletion(flag bool) {
@@ -72,15 +82,23 @@ func (fops *Fops) BeginDeletion(flag bool) {
 	runtime.EventsEmit(fops.ctx, "progress", 100)
 }
 
-func (fops *Fops) AddDoneWork(z int64) {
-	atomic.AddInt64(&fops.donework, z)
-	aload_donework := atomic.LoadInt64(&fops.donework)
-	alodad_totalwork := atomic.LoadInt64(&fops.totalwork)
-	ratio := int64(float64(aload_donework) / float64(alodad_totalwork) * 100)
+func (fops *Fops) AddDoneWork(z uint64) {
+	fops.donework.Add(z)
+	aload_donework := fops.donework.Load()
+	aload_totalwork := fops.totalwork.Load()
+	// fmt.Println("z", z, "aload_donework", aload_donework, "aload_totalwork", aload_totalwork)
+	if aload_totalwork == 0 {
+		return
+	}
+	ratio := (float64(aload_donework) / float64(aload_totalwork)) * 100
+	fmt.Println("Adding Done work", fops.donework.Load(), "ratio", ratio)
+
 	runtime.EventsEmit(fops.ctx, "progress", ratio)
+	// fmt.Println("emitted an event with ratio", ratio)
 }
-func (fops *Fops) AddTotalWork(z int64) {
-	atomic.AddInt64(&fops.totalwork, z)
+func (fops *Fops) AddTotalWork(z uint64) {
+	fops.totalwork.Add(z)
+	fmt.Println("Adding total work", fops.totalwork.Load())
 }
 
 func (fops *Fops) AddSelected(path string) {
@@ -128,114 +146,6 @@ func (fops *Fops) Startup(ctx context.Context) {
 	fops.ctx = ctx
 }
 
-func (fops *Fops) GetDir(path string) []string {
-	if path == "null" {
-		return []string{}
-	}
-	path += "/"
-	fmt.Println("path called:", path)
-	list, err := os.ReadDir(path)
-	if err != nil {
-		fmt.Println("Could not get directory information")
-	}
-	file_retlist := []string{}
-	file_hiddenlist := []string{}
-	dir_retlist := []string{}
-	dir_hiddenlist := []string{}
-
-	symbol_directory := "🗂️"
-	symbol_document := "📄"
-	for _, v := range list {
-
-		strname := ""
-		if v.IsDir() {
-			strname = symbol_directory + " " + v.Name()
-		} else {
-			strname = symbol_document + " " + v.Name()
-		}
-		if v.Name()[0] == '.' {
-			if v.IsDir() {
-				dir_hiddenlist = append(dir_hiddenlist, strname)
-			} else {
-				file_hiddenlist = append(file_hiddenlist, strname)
-			}
-		} else {
-			if v.IsDir() {
-				dir_retlist = append(dir_retlist, strname)
-			} else {
-				file_retlist = append(file_retlist, strname)
-			}
-		}
-	}
-	dir_retlist = append(dir_retlist, file_retlist...)
-	dir_retlist = append(dir_retlist, dir_hiddenlist...)
-	dir_retlist = append(dir_retlist, file_hiddenlist...)
-	fmt.Println(len(dir_retlist))
-	return dir_retlist
-}
-
-func (fops *Fops) GetDirHTML(path string) string {
-	if path == "null" {
-		return ""
-	}
-	path += "/"
-	fmt.Println("path called:", path)
-	list, err := os.ReadDir(path)
-	if err != nil {
-		fmt.Println("Could not get directory information")
-	}
-	file_retlist := []string{}
-	file_hiddenlist := []string{}
-	dir_retlist := []string{}
-	dir_hiddenlist := []string{}
-
-	symbol_directory := "🗂️"
-	symbol_document := "📄"
-	for _, v := range list {
-
-		strname := ""
-		if v.IsDir() {
-			strname = symbol_directory + " " + v.Name()
-		} else {
-			strname = symbol_document + " " + v.Name()
-		}
-		if v.Name()[0] == '.' {
-			if v.IsDir() {
-				dir_hiddenlist = append(dir_hiddenlist, strname)
-			} else {
-				file_hiddenlist = append(file_hiddenlist, strname)
-			}
-		} else {
-			if v.IsDir() {
-				dir_retlist = append(dir_retlist, strname)
-			} else {
-				file_retlist = append(file_retlist, strname)
-			}
-		}
-	}
-	dir_retlist = append(dir_retlist, file_retlist...)
-	dir_retlist = append(dir_retlist, dir_hiddenlist...)
-	dir_retlist = append(dir_retlist, file_hiddenlist...)
-	fmt.Println(len(dir_retlist))
-	return generateEntityListHTML(dir_retlist)
-}
-
-func generateEntityListHTML(names []string) string {
-	var html strings.Builder
-
-	html.WriteString(`<div id="entity-container">`)
-	for _, name := range names {
-		html.WriteString(fmt.Sprintf(`
-            <div class="entity">
-                <div class="entity-name">%s</div>
-            </div>`,
-			name,
-		))
-	}
-	html.WriteString("</div>")
-	return html.String()
-}
-
 func (fops *Fops) GetParent(path string) string {
 	return filepath.Dir(path)
 }
@@ -267,4 +177,15 @@ func (fops *Fops) Renamer(path string, newName string) error {
 		return err
 	}
 	return nil
+}
+
+func (fops *Fops) FileLogger(v ...interface{}) error {
+	file, err := os.OpenFile("C:/Users/Sushi/Desktop/logfile", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	_, err = fmt.Fprintln(file, v...)
+	return err
 }

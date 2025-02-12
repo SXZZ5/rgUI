@@ -72,6 +72,7 @@ export default function ContextMenu() {
     }
 
     const menu_cutHandler = async () => {
+        // e.preventDefault()
         console.log("menu_cutHandler");
         await RemoveAllSelected();
         await AddSelected(contextMenuActivePath)
@@ -80,6 +81,7 @@ export default function ContextMenu() {
     }
 
     const menu_copyHandler = async () => {
+        // e.preventDefault();
         console.log("menu_copyHandler");
         await RemoveAllSelected();
         await AddSelected(contextMenuActivePath);
@@ -88,19 +90,27 @@ export default function ContextMenu() {
     }
 
     const menu_pasteHandler = async () => {
+        // e.preventDefault();
         console.log("menu_pasteHandler");
         setTransferring(true);
-        BeginTransfer(await GetParent(contextMenuActivePath));
+        const shiftPressed = window.event?.shiftKey;
+        if(shiftPressed){
+            BeginTransfer(await GetParent(contextMenuActivePath), true);
+        } else {
+            BeginTransfer(await GetParent(contextMenuActivePath), false);
+        }
         hider();
     }
 
     const menu_renameHandler = () => {
+        // e.preventDefault();
         const z = document.getElementById('renamepopup');
         console.log("rename button clicked");
         z.showPopover();
     }
 
     const menu_deleteHandler = async () => {
+        // e.preventDefault();
         console.log("menu_deleteHandler");
         RemoveAllSelected();
         AddSelected(contextMenuActivePath);
@@ -113,6 +123,7 @@ export default function ContextMenu() {
     }
 
     const menu_pinHandler = async () => {
+        // e.preventDefault();
         await PinALocation(contextMenuActivePath)
         triggerSidebarRerender();
         hider()
