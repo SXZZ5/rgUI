@@ -93,7 +93,12 @@ export default function ContextMenu() {
         // e.preventDefault();
         console.log("menu_pasteHandler");
         setTransferring(true);
-        BeginTransfer(await GetParent(contextMenuActivePath));
+        const shiftPressed = window.event?.shiftKey;
+        if(shiftPressed){
+            BeginTransfer(await GetParent(contextMenuActivePath), true);
+        } else {
+            BeginTransfer(await GetParent(contextMenuActivePath), false);
+        }
         hider();
     }
 

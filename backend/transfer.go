@@ -20,7 +20,7 @@ import (
 
 type ErrStruct struct {
 	Src string
-	Err error
+	Err string
 }
 
 type TransferError struct {
@@ -52,14 +52,11 @@ func (transfer *Transfer) InitTransfer(
 
 	transferError := TransferError{}
 
-	// fmt.Println(caller.ToMove)
-
 	directories := []string{}
 	for _, v := range caller.ToMove {
 		info, err := os.Stat(v)
 		if err != nil {
-			// transfer = nil
-			errstruct := ErrStruct{v, err}
+			errstruct := ErrStruct{v, err.Error()}
 			transferError.StatErrors = append(transferError.StatErrors, errstruct)
 			continue
 		}
@@ -91,7 +88,7 @@ func (transfer *Transfer) InitTransfer(
 			return nil
 		})
 		if walkerr != nil {
-			errstruct := ErrStruct{v, walkerr}
+			errstruct := ErrStruct{v, walkerr.Error()}
 			transferError.StatErrors = append(transferError.StatErrors, errstruct)
 			continue
 		}
@@ -107,14 +104,14 @@ func (transfer *Transfer) InitTransfer(
 		for _, v := range transfer.files {
 			_, err := os.Stat(v.Destsrc)
 			if !os.IsNotExist(err) {
-				errstruct := ErrStruct{v.Destsrc, errors.New("already exists")}
+				errstruct := ErrStruct{v.Destsrc, "already exists"}
 				ovw_errs = append(ovw_errs, errstruct)
 			}
 		}
 		for _, v := range transfer.directories {
 			_, err := os.Stat(v)
 			if !os.IsNotExist(err) {
-				errstruct := ErrStruct{v, errors.New("already exists")}
+				errstruct := ErrStruct{v, "already exists"}
 				ovw_errs = append(ovw_errs, errstruct)
 			}
 		}
@@ -134,7 +131,7 @@ func (transfer *Transfer) InitTransfer(
 	for _, v := range transfer.directories {
 		err := os.MkdirAll(v, 0755)
 		if err != nil {
-			errstruct := ErrStruct{v, err}
+			errstruct := ErrStruct{v, err.Error()}
 			transferError.StatErrors = append(transferError.StatErrors, errstruct)
 			transfer = nil
 			continue
@@ -183,7 +180,7 @@ func (transfer *Transfer) makePool(transferError *TransferError) {
 		fwd++
 		// fmt.Print("[",fwd,",",cnt,"]");
 		if rec.err != nil {
-			errstruct := ErrStruct{transfer.files[rec.pos-1].Src, rec.err}
+			errstruct := ErrStruct{transfer.files[rec.pos-1].Src, rec.err.Error()}
 			transferError.IOErrors = append(transferError.IOErrors, errstruct)
 		}
 		if cnt == 0 {

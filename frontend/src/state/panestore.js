@@ -39,7 +39,10 @@ const usePaneState = create((set) => ({
             contextMenuActivePath: z
         }
     }),
-    setContextMenuActiveDivId: (z) => set({contextMenuActiveDivId: z})
+    setContextMenuActiveDivId: (z) => set({contextMenuActiveDivId: z}),
+
+    resultStyle: {},
+    setResultStyle: (z) => set({ resultStyle: z }),
 }))
 
 

@@ -30,7 +30,7 @@ function indirectSetter_oldlen(val) {
 }
 
 var cancel = EventsOn("dirdata", function domHandler(data) {
-    console.log("heard an event", indirectGetter_gi(), indirectGetter_oldlen());
+    // console.log("heard an event", indirectGetter_gi(), indirectGetter_oldlen());
     // console.log("data received with event:",data);
     const parent = document.getElementById('foldercontents')
     //if data is empty consider it to be a THE END MESSAGE
