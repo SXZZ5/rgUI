@@ -30,6 +30,10 @@ export function CutCommand() {
   return window['go']['backend']['Fops']['CutCommand']();
 }
 
+export function FileLogger(arg1) {
+  return window['go']['backend']['Fops']['FileLogger'](arg1);
+}
+
 export function FileRenamer(arg1, arg2) {
   return window['go']['backend']['Fops']['FileRenamer'](arg1, arg2);
 }

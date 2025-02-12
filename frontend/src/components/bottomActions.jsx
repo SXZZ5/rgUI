@@ -21,6 +21,7 @@ export default function BottomActions() {
 
     useEffect(() => {
         const cancelFunc = EventsOn("progress", (data) => {
+            console.log("progress event: data: ", data)
             const pbarpath = useFFState.getState().primarybarState_path;
             setCompletion(data)
             if (data === 100) {

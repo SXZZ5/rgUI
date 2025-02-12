@@ -16,6 +16,8 @@ export function CopyCommand():Promise<void>;
 
 export function CutCommand():Promise<void>;
 
+export function FileLogger(arg1:Array<any>):Promise<void>;
+
 export function FileRenamer(arg1:string,arg2:string):Promise<boolean>;
 
 export function GetDir(arg1:string):Promise<Array<string>>;

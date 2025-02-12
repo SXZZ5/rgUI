@@ -11,7 +11,7 @@ import { useRerenderTrigger } from "../state/rerenderTrigger";
 const dirsymbol = '📁'
 const filesymbol = '📄'
 
-//set these inside useEffect.
+
 //gi is related to number of items that have to be rendered for current folder. Increases with more events and is initialised to 1 in Effect(primarybar_state_path)
 //oldlen is supposed to statically record the number of children of old folder so that we can use replace child instead of remove-add. Also,helps at the end int removing any leftover old nodes.
 

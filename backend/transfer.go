@@ -68,7 +68,7 @@ func (transfer *Transfer) InitTransfer(
 		} else {
 			transfer.files = append(transfer.files, Work{v, transfer.destPathOf(fp.Base(v))})
 		}
-		caller.AddTotalWork(int64(info.Size()))
+		fmt.Println(v, info.Name(), info.Size())
 	}
 
 	transfer.directories = []string{}
@@ -107,20 +107,28 @@ func (transfer *Transfer) InitTransfer(
 		for _, v := range transfer.files {
 			_, err := os.Stat(v.Destsrc)
 			if !os.IsNotExist(err) {
-				errstruct := ErrStruct{v.Destsrc, errors.New("Already exists")}
+				errstruct := ErrStruct{v.Destsrc, errors.New("already exists")}
 				ovw_errs = append(ovw_errs, errstruct)
 			}
 		}
 		for _, v := range transfer.directories {
 			_, err := os.Stat(v)
 			if !os.IsNotExist(err) {
-				errstruct := ErrStruct{v, errors.New("Already exists")}
+				errstruct := ErrStruct{v, errors.New("already exists")}
 				ovw_errs = append(ovw_errs, errstruct)
 			}
 		}
 		if len(ovw_errs) > 0 {
 			return TransferError{ovw_errs, []ErrStruct{}}
 		}
+	}
+
+	for _, v := range transfer.files {
+		info, err := os.Stat(v.Src)
+		if err != nil {
+			continue
+		}
+		caller.AddTotalWork(uint64(info.Size()))
 	}
 
 	for _, v := range transfer.directories {
@@ -164,7 +172,6 @@ func (transfer *Transfer) makePool(transferError *TransferError) {
 			work <- i
 			// fmt.Println("put on queue", i)
 		}
-		return;
 	}()
 
 	// fmt.Println("beginning monitoring statuses", cnt)
@@ -198,10 +205,12 @@ func (transfer *Transfer) worker(work chan int, status chan Statuspair, ctx cont
 	for {
 		select {
 		case idx := <-work:
+			// err := transfer.skwriter(&transfer.files[idx-1])
 			err := transfer.skwriter(&transfer.files[idx-1], &cw, &cr, &buf)
+			// err := transfer.skwriter(&transfer.files[idx-1], &cw, &cr)
 			status <- Statuspair{idx, err}
 
-		case _ = <-ctx.Done():
+		case <-ctx.Done():
 			return
 		}
 	}
@@ -211,7 +220,8 @@ func (transfer *Transfer) skwriter(
 	wrk *Work,
 	cw *CustomWriter,
 	cr *CustomReader,
-	buf *[]byte) error {
+	buffer *[]byte,
+) error {
 	srcfile, err := os.Open(wrk.Src)
 	if err != nil {
 		return err
@@ -227,7 +237,11 @@ func (transfer *Transfer) skwriter(
 	cw.Init(destfile)
 	cr.Init(srcfile)
 
-	_, err = io.CopyBuffer(cw, cr, *buf)
+	// cr := CustomReader{srcfile, xxh3.New()}
+	// cw := CustomWriter{destfile, xxh3.New(), transfer.caller}
+	// buf := make([]byte, 1024*512)
+
+	_, err = io.CopyBuffer(cw, cr, *buffer)
 	if err != nil {
 		return err
 	}
@@ -235,7 +249,7 @@ func (transfer *Transfer) skwriter(
 	if cw.GetHash() == cr.GetHash() {
 		return nil
 	} else {
-		return errors.New("Hash Verification Failed")
+		return errors.New("hash verification failed")
 	}
 }
 

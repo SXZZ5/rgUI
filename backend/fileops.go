@@ -22,27 +22,27 @@ type Fops struct {
 	ctx       context.Context
 	Selected  []string
 	ToMove    []string
-	totalwork int64
-	donework  int64
+	totalwork atomic.Uint64
+	donework  atomic.Uint64
 	Cut       bool
 }
 
 func (fops *Fops) BeginTransfer(destination string) {
 	runtime.EventsEmit(fops.ctx, "progress", 0)
-	defer runtime.EventsEmit(fops.ctx, "progress",100)
+	defer runtime.EventsEmit(fops.ctx, "progress", 100)
 	if len(fops.ToMove) <= 0 {
 		fmt.Println("being transfer: Nothing inside ToMove[]")
 		return
 	}
 	timcounter := time.Now()
-	atomic.StoreInt64(&fops.totalwork, 0)
-	atomic.StoreInt64(&fops.donework, 0)
+	fops.donework.Store(0)
+	fops.totalwork.Store(0)
 	destination = filepath.Clean(destination)
 	fmt.Println("begin transfer requested at destination", destination)
 	fmt.Println("selected files for transfer", fops.ToMove)
 	transfer := Transfer{}
 	errlist := transfer.InitTransfer(fops, destination, false)
-	fmt.Println(errlist)
+	fops.FileLogger(errlist)
 	if fops.Cut {
 		fmt.Println("going to begin deletion")
 		fmt.Println(fops)
@@ -68,15 +68,23 @@ func (fops *Fops) BeginDeletion(flag bool) {
 	runtime.EventsEmit(fops.ctx, "progress", 100)
 }
 
-func (fops *Fops) AddDoneWork(z int64) {
-	atomic.AddInt64(&fops.donework, z)
-	aload_donework := atomic.LoadInt64(&fops.donework)
-	alodad_totalwork := atomic.LoadInt64(&fops.totalwork)
-	ratio := int64(float64(aload_donework) / float64(alodad_totalwork) * 100)
+func (fops *Fops) AddDoneWork(z uint64) {
+	fops.donework.Add(z)
+	aload_donework := fops.donework.Load()
+	aload_totalwork := fops.totalwork.Load()
+	// fmt.Println("z", z, "aload_donework", aload_donework, "aload_totalwork", aload_totalwork)
+	if aload_totalwork == 0 {
+		return
+	}
+	ratio := (float64(aload_donework) / float64(aload_totalwork)) * 100
+	fmt.Println("Adding Done work", fops.donework.Load(), "ratio", ratio)
+
 	runtime.EventsEmit(fops.ctx, "progress", ratio)
+	// fmt.Println("emitted an event with ratio", ratio)
 }
-func (fops *Fops) AddTotalWork(z int64) {
-	atomic.AddInt64(&fops.totalwork, z)
+func (fops *Fops) AddTotalWork(z uint64) {
+	fops.totalwork.Add(z)
+	fmt.Println("Adding total work", fops.totalwork.Load())
 }
 
 func (fops *Fops) AddSelected(path string) {
@@ -263,4 +271,15 @@ func (fops *Fops) Renamer(path string, newName string) error {
 		return err
 	}
 	return nil
+}
+
+func (fops *Fops) FileLogger(v ...interface{}) error {
+	file, err := os.OpenFile("C:/Users/Sushi/Desktop/logfile", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	_, err = fmt.Fprintln(file, v...)
+	return err
 }
